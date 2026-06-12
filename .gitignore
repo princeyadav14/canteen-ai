@@ -1,0 +1,4 @@
+.env
+feedback_history.json
+__pycache__/
+*.pyc

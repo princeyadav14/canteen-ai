@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Canteen AI - Hall 12</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        .top-bar {
+            background: linear-gradient(135deg, #064e3b, #065f46);
+            padding: 20px 20px 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .top-bar h1 {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .top-bar p {
+            color: #6ee7b7;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .admin-toggle {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .main-card {
+            background: white;
+            margin: -20px 16px 0;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: 80vh;
+        }
+
+        .date-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .date-text {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .time-text {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .mess-card {
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mess-bad {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .mess-good {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+        }
+
+        .mess-decent {
+            background: #fafafa;
+            border-left: 4px solid #94a3b8;
+        }
+
+        .mess-icon { font-size: 24px; }
+
+        .mess-text h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .mess-text p {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .predict-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 18px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(5,150,105,0.4);
+            transition: transform 0.1s;
+            letter-spacing: 0.3px;
+        }
+
+        .predict-btn:active { transform: scale(0.98); }
+        .predict-btn:disabled {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            box-shadow: none;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 30px 0;
+            display: none;
+        }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: #059669;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .prediction-card {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid #a7f3d0;
+            position: relative;
+        }
+
+        .prediction-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .prediction-header span {
+            font-size: 12px;
+            font-weight: 700;
+            color: #065f46;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .level-badge {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .level-high { background: #fef2f2; color: #dc2626; }
+        .level-medium { background: #fefce8; color: #ca8a04; }
+        .level-low { background: #f0fdf4; color: #16a34a; }
+
+        .prediction-text {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #1e293b;
+        }
+
+        .feedback-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .feedback-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .feedback-subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .emoji-scale {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .emoji-btn {
+            flex: 1;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .emoji-btn .emoji { font-size: 22px; display: block; }
+        .emoji-btn .label { font-size: 9px; color: #94a3b8; margin-top: 4px; display: block; }
+
+        .emoji-btn.selected {
+            border-color: #059669;
+            background: #ecfdf5;
+            transform: scale(1.05);
+        }
+
+        .feedback-note {
+            width: 100%;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 12px;
+            color: #1e293b;
+            resize: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #1e293b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .thanks-card {
+            text-align: center;
+            padding: 24px;
+            display: none;
+        }
+
+        .thanks-icon { font-size: 48px; margin-bottom: 12px; }
+        .thanks-title { font-size: 18px; font-weight: 700; color: #065f46; margin-bottom: 6px; }
+        .thanks-sub { font-size: 13px; color: #64748b; }
+
+        .alert-card {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 6px;
+        }
+
+        .alert-msg {
+            font-size: 12px;
+            color: #78350f;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .alert-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .alert-yes {
+            flex: 1;
+            background: #92400e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .alert-no {
+            flex: 1;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Admin panel — hidden by default */
+        .admin-panel {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: none;
+            border: 2px dashed #e2e8f0;
+        }
+
+        .admin-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .admin-input {
+            width: 100%;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 10px;
+            color: #1e293b;
+            resize: none;
+        }
+
+        .image-upload-btn {
+            background: white;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%;
+            font-size: 12px;
+            color: #64748b;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #imageInput { display: none; }
+
+        .bottom-bar {
+            text-align: center;
+            padding: 20px;
+            font-size: 11px;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h1>🍽️ Canteen AI</h1>
+    <p>Hall 12 · IIT Kanpur</p>
+    <button class="admin-toggle" onclick="toggleAdmin()">⚙️ Admin</button>
+</div>
+
+<div class="main-card">
+
+    <div class="date-row">
+        <span class="date-text" id="dateText">Aaj ki taiyari</span>
+        <span class="time-text" id="timeText"></span>
+    </div>
+
+    <div class="mess-card mess-decent" id="messCard">
+        <div class="mess-icon" id="messIcon">🍱</div>
+        <div class="mess-text">
+            <h3 id="messTitle">Mess status load ho raha hai...</h3>
+            <p id="messSubtitle">Prediction ke liye button dabao</p>
+        </div>
+    </div>
+
+    <!-- Admin panel — only you see this -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-label">⚡ Special Update (Admin Only)</div>
+        <textarea class="admin-input" id="realtimeInput" rows="3"
+            placeholder="e.g. Aaj mess mein pest control hai, ya hall mein koi event hai..."></textarea>
+        <label class="image-upload-btn" for="imageInput">
+            📷 Notice ya photo attach karo
+        </label>
+        <input type="file" id="imageInput" accept="image/*" onchange="handleImage(this)">
+        <div id="imagePreview" style="font-size:11px;color:#059669;margin-top:6px;"></div>
+    </div>
+
+    <button class="predict-btn" id="predictBtn" onclick="getPrediction()">
+        ✨ Aaj ka Andaaza Lagao
+    </button>
+
+    <div class="loading-state" id="loadingState">
+        <div class="loading-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="loading-text">AI soch raha hai...</div>
+    </div>
+
+    <div class="alert-card" id="alertCard">
+        <div class="alert-title">🔔 Pattern Notice</div>
+        <div class="alert-msg" id="alertMsg"></div>
+        <div class="alert-btns">
+            <button class="alert-yes" onclick="confirmAdjust()">Haan, badlo permanently</button>
+            <button class="alert-no" onclick="dismissAlert()">Abhi nahi</button>
+        </div>
+    </div>
+
+    <div class="prediction-card" id="predictionCard">
+        <div class="prediction-header">
+            <span>🤖 AI Prediction</span>
+            <div class="level-badge" id="levelBadge"></div>
+        </div>
+        <div class="prediction-text" id="predictionText"></div>
+    </div>
+
+    <div class="feedback-card" id="feedbackCard">
+        <div class="feedback-title">Prediction kaisi rahi aaj?</div>
+        <div class="feedback-subtitle">Aapka feedback kal ki prediction behtar banata hai</div>
+        <div class="emoji-scale">
+            <button class="emoji-btn" onclick="selectScore(1)">
+                <span class="emoji">😞</span>
+                <span class="label">Bilkul galat</span>
+            </button>
+            <button class="emoji-btn" onclick="selectScore(2)">
+                <span class="emoji">😕</span>
+                <span class="label">Thoda galat</span>
+            </button>
+            <button class="emoji-btn" onclick="selectScore(3)">
+                <span class="emoji">😐</span>
+                <span class="label">Theek tha</span>
+            </button>
+            <button class="emoji-btn" onclick="selectScore(4)">
+                <span class="emoji">🙂</span>
+                <span class="label">Accha tha</span>
+            </button>
+            <button class="emoji-btn" onclick="selectScore(5)">
+                <span class="emoji">😄</span>
+                <span class="label">Ekdum sahi</span>
+            </button>
+        </div>
+        <textarea class="feedback-note" id="feedbackNote" rows="2"
+            placeholder="Kuch aur batana hai? e.g. Bahut zyada bheed aayi raat ko..."></textarea>
+        <button class="submit-btn" onclick="submitFeedback()">
+            Feedback Submit Karo ✓
+        </button>
+    </div>
+
+    <div class="thanks-card" id="thanksCard">
+        <div class="thanks-icon">🙏</div>
+        <div class="thanks-title">Shukriya Anoop Bhai!</div>
+        <div class="thanks-sub">Aapka feedback save ho gaya.<br>Kal ki prediction aur behtar hogi.</div>
+    </div>
+
+</div>
+
+<div class="bottom-bar">
+    Powered by AI · Hall 12 Canteen · IIT Kanpur
+</div>
+
+<script>
+    let selectedScore = null;
+    let currentPredictedLevel = null;
+    let currentAlert = null;
+    let uploadedImage = null;
+    let adminVisible = false;
+
+    function updateClock() {
+        const now = new Date();
+        const days = ['Ravivar','Somvar','Mangalvar','Budhvar','Guruvar','Shanivar','Ravivar'];
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        document.getElementById('dateText').textContent =
+            days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()];
+        let h = now.getHours(), m = now.getMinutes();
+        let ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        document.getElementById('timeText').textContent =
+            h + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+
+    function toggleAdmin() {
+        adminVisible = !adminVisible;
+        document.getElementById('adminPanel').style.display = adminVisible ? 'block' : 'none';
+    }
+
+    function handleImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                uploadedImage = e.target.result;
+                document.getElementById('imagePreview').textContent = '✓ ' + input.files[0].name;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function selectScore(score) {
+        selectedScore = score;
+        document.querySelectorAll('.emoji-btn').forEach((btn, i) => {
+            btn.classList.toggle('selected', i + 1 === score);
+        });
+    }
+
+    function detectLevel(text) {
+        const t = text.toUpperCase();
+        const highIdx = t.indexOf('HIGH');
+        const medIdx = t.indexOf('MEDIUM');
+        const lowIdx = t.indexOf('LOW');
+    
+        const indices = [];
+        if (highIdx !== -1) indices.push({level: 'HIGH', idx: highIdx});
+        if (medIdx !== -1) indices.push({level: 'MEDIUM', idx: medIdx});
+        if (lowIdx !== -1) indices.push({level: 'LOW', idx: lowIdx});
+    
+        if (indices.length === 0) return 'MEDIUM';
+        indices.sort((a, b) => a.idx - b.idx);
+        return indices[0].level;
+    }
+
+    async function getPrediction() {
+        const btn = document.getElementById('predictBtn');
+        const loading = document.getElementById('loadingState');
+        const predCard = document.getElementById('predictionCard');
+        const feedCard = document.getElementById('feedbackCard');
+        const thanks = document.getElementById('thanksCard');
+        const instruction = document.getElementById('realtimeInput').value.trim();
+
+        btn.disabled = true;
+        btn.textContent = '⏳ Generating...';
+        loading.style.display = 'block';
+        predCard.style.display = 'none';
+        feedCard.style.display = 'none';
+        thanks.style.display = 'none';
+        selectedScore = null;
+        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+
+        try {
+            const body = { instruction: instruction || null };
+            if (uploadedImage) body.image = uploadedImage;
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById('predictionText').textContent = 'Error: ' + data.error;
+                predCard.style.display = 'block';
+            } else {
+                const messCard = document.getElementById('messCard');
+                const messIcon = document.getElementById('messIcon');
+                const messTitle = document.getElementById('messTitle');
+                const messSub = document.getElementById('messSubtitle');
+
+                if (data.is_bad_mess_day) {
+                    messCard.className = 'mess-card mess-bad';
+                    messIcon.textContent = '⚠️';
+                    messTitle.textContent = 'Aaj mess dinner kharab hai';
+                    messSub.textContent = 'Canteen mein zyada bheed aane ki sambhavna';
+                } else if (data.mess_quality === 'GOOD') {
+                    messCard.className = 'mess-card mess-good';
+                    messIcon.textContent = '✅';
+                    messTitle.textContent = 'Aaj mess dinner accha hai';
+                    messSub.textContent = 'Dinner time canteen thodi kam busy rahegi';
+                } else {
+                    messCard.className = 'mess-card mess-decent';
+                    messIcon.textContent = '🍱';
+                    messTitle.textContent = 'Aaj mess dinner theek hai';
+                    messSub.textContent = 'Normal footfall expected';
+                }
+
+                const level = detectLevel(data.prediction);
+                currentPredictedLevel = level;
+                const badge = document.getElementById('levelBadge');
+                badge.textContent = level === 'HIGH' ? '🔴 HIGH' : level === 'LOW' ? '🟢 LOW' : '🟡 MEDIUM';
+                badge.className = 'level-badge level-' + level.toLowerCase();
+
+                document.getElementById('predictionText').textContent = data.prediction;
+                predCard.style.display = 'block';
+                feedCard.style.display = 'block';
+
+                if (data.pattern_alert) {
+                    currentAlert = data.pattern_alert;
+                    document.getElementById('alertMsg').textContent = data.pattern_alert.message;
+                    document.getElementById('alertCard').style.display = 'block';
+                }
+            }
+        } catch (e) {
+            document.getElementById('predictionText').textContent = 'Kuch gadbad ho gayi. Dobara try karo.';
+            document.getElementById('predictionCard').style.display = 'block';
+        }
+
+        loading.style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = '🔄 Dobara Generate Karo';
+    }
+
+    async function submitFeedback() {
+        if (!selectedScore) {
+            alert('Pehle ek emoji select karo');
+            return;
+        }
+        const note = document.getElementById('feedbackNote').value.trim();
+        try {
+            const res = await fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    score: selectedScore,
+                    predicted_level: currentPredictedLevel,
+                    note: note
+                })
+            });
+            const data = await res.json();
+            document.getElementById('feedbackCard').style.display = 'none';
+            document.getElementById('thanksCard').style.display = 'block';
+
+            if (data.pattern_alert && !currentAlert) {
+                currentAlert = data.pattern_alert;
+                document.getElementById('alertMsg').textContent = data.pattern_alert.message;
+                document.getElementById('alertCard').style.display = 'block';
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function confirmAdjust() {
+        if (!currentAlert) return;
+        await fetch('/adjust', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ day: currentAlert.day, adjustment: currentAlert.type })
+        });
+        document.getElementById('alertCard').style.display = 'none';
+        currentAlert = null;
+    }
+
+    function dismissAlert() {
+        document.getElementById('alertCard').style.display = 'none';
+        currentAlert = null;
+    }
+</script>
+</body>
+</html>
