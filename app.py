@@ -1,20 +1,20 @@
 from dotenv import load_dotenv
 load_dotenv()
 from flask import Flask, render_template, jsonify, request
-import google.generativeai as genai
+from groq import Groq
 from datetime import datetime
 import json
 import os
-import base64
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-# ============================================================
-# PERMANENT KNOWLEDGE BASE
-# Based on 3 years of observation by Hall 12 resident
-# ============================================================
+cred = credentials.Certificate("firebase-credentials.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 MESS_KNOWLEDGE = {
     "bad_dinner_days": ["Monday", "Thursday", "Saturday"],
@@ -70,9 +70,6 @@ MESS_MENU = {
 }
 
 ACADEMIC_CALENDAR = {
-    "2026-06-12": {"event": "Last day of modular courses first half", "type": "academic_end"},
-    "2026-06-13": {"event": "No academic activity", "type": "holiday"},
-    "2026-06-14": {"event": "No academic activity", "type": "holiday"},
     "2026-06-15": {"event": "Mid semester exam modular courses", "type": "exam"},
     "2026-06-16": {"event": "Mid semester exam modular courses", "type": "exam"},
     "2026-06-18": {"event": "Make-up examination", "type": "exam"},
@@ -82,51 +79,42 @@ ACADEMIC_CALENDAR = {
     "2026-07-14": {"event": "End semester examination", "type": "exam"},
 }
 
-SEMESTER_PHASE = {
-    "summer_term": {
-        "start": "2026-05-21",
-        "end": "2026-07-24",
-        "student_count": "LOW",
-        "notes": "Summer term — fewer students on campus, mostly PG and research students"
-    }
-}
-
-# ============================================================
-# FEEDBACK STORAGE
-# ============================================================
-
-FEEDBACK_FILE = "feedback_history.json"
+SEMESTER_PHASE = "Summer Term 2026 — fewer students on campus, mostly PG and research students"
 
 def load_feedback():
-    if os.path.exists(FEEDBACK_FILE):
-        with open(FEEDBACK_FILE, "r") as f:
-            return json.load(f)
-    return {"history": [], "permanent_adjustments": {}, "pattern_alerts": []}
+    try:
+        doc_ref = db.collection("canteen").document("feedback")
+        doc = doc_ref.get()
+        if doc.exists:
+            return doc.to_dict()
+        return {"history": [], "permanent_adjustments": {}, "pattern_alerts": []}
+    except Exception as e:
+        print(f"Firebase read error: {e}")
+        return {"history": [], "permanent_adjustments": {}, "pattern_alerts": []}
 
 def save_feedback(data):
-    with open(FEEDBACK_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    try:
+        doc_ref = db.collection("canteen").document("feedback")
+        doc_ref.set(data)
+    except Exception as e:
+        print(f"Firebase write error: {e}")
 
 def analyze_patterns(feedback_data):
     history = feedback_data.get("history", [])
     if len(history) < 3:
         return None
-    
     recent = history[-7:] if len(history) >= 7 else history
-    
     day_scores = {}
     for entry in recent:
         day = entry.get("day")
         score = entry.get("score", 3)
-        predicted = entry.get("predicted_level")
         if day not in day_scores:
             day_scores[day] = []
-        day_scores[day].append({"score": score, "predicted": predicted})
-    
+        day_scores[day].append(score)
     alerts = []
     for day, scores in day_scores.items():
         if len(scores) >= 2:
-            avg_score = sum(s["score"] for s in scores) / len(scores)
+            avg_score = sum(scores) / len(scores)
             if avg_score <= 1.5:
                 alerts.append({
                     "type": "consistent_negative",
@@ -139,14 +127,9 @@ def analyze_patterns(feedback_data):
                     "day": day,
                     "message": f"{day} predictions are consistently accurate. Pattern confirmed."
                 })
-    
     return alerts if alerts else None
 
-# ============================================================
-# CONTEXT BUILDER
-# ============================================================
-
-def get_full_context(realtime_instruction=None, realtime_image=None):
+def get_full_context(realtime_instruction=None):
     today = datetime.now()
     date_str = today.strftime("%Y-%m-%d")
     day_name = today.strftime("%A")
@@ -166,7 +149,7 @@ def get_full_context(realtime_instruction=None, realtime_image=None):
     elif hour < 20:
         meal_period = "evening — mess dinner starting soon at 7:30pm, predicting dinner rush"
     elif hour < 22:
-        meal_period = "mess dinner time (7:30-9:30pm) — predicting post-mess and late night rush"
+        meal_period = "mess dinner time 7:30-9:30pm — predicting post-mess and late night rush"
     else:
         meal_period = "late night — main canteen rush period"
 
@@ -183,22 +166,22 @@ Current time: {time_now}
 Meal period: {meal_period}
 
 === ACADEMIC SITUATION ===
-Semester: Summer Term 2026 (fewer students on campus, mostly PG/research)
+Semester: {SEMESTER_PHASE}
 Today's academic event: {academic_event.get('event', 'Regular day')} ({academic_event.get('type', 'normal')})
 
 === TODAY'S MESS MENU ===
 Mess lunch (12:30-2:30pm): {mess_today.get('lunch', 'Unknown')}
 Mess dinner (7:30-9:30pm): {mess_today.get('dinner', 'Unknown')}
-Mess dinner quality assessment: {mess_today.get('dinner_quality', 'DECENT')}
+Mess dinner quality: {mess_today.get('dinner_quality', 'DECENT')}
 
 === BEHAVIORAL PATTERNS (3 years of observation) ===
-Bad mess dinner days (high canteen footfall): Monday, Thursday, Saturday
+Bad mess dinner days — high canteen footfall: Monday, Thursday, Saturday
 Today is a bad mess dinner day: {is_bad_dinner_day}
 Lunch footfall: Only significant when mess is completely closed
-Late night (10pm-2am): Always busy regardless of mess quality
+Late night 10pm-2am: Always busy regardless of mess quality
 
 === MOST POPULAR ITEMS ===
-Snacks (always recommend stocking): {', '.join(POPULAR_ITEMS['snacks'])}
+Snacks: {', '.join(POPULAR_ITEMS['snacks'])}
 Popular veg meal: {', '.join(POPULAR_ITEMS['meal_veg'])}
 Popular non-veg: {', '.join(POPULAR_ITEMS['meal_nonveg'])}
 
@@ -206,7 +189,7 @@ Popular non-veg: {', '.join(POPULAR_ITEMS['meal_nonveg'])}
 {json.dumps(permanent_adjustments, indent=2) if permanent_adjustments else 'None yet'}
 
 === RECENT FEEDBACK (last 5 days) ===
-{json.dumps(recent_feedback, indent=2) if recent_feedback else 'No feedback yet — first few days of usage'}
+{json.dumps(recent_feedback, indent=2) if recent_feedback else 'No feedback yet'}
 """
 
     if realtime_instruction:
@@ -216,32 +199,19 @@ Popular non-veg: {', '.join(POPULAR_ITEMS['meal_nonveg'])}
 NOTE: This real-time instruction overrides all other predictions. Give it maximum weightage.
 """
 
-    if realtime_image:
-        context += """
-=== IMAGE PROVIDED ===
-An image has been shared with additional context. Analyze it and incorporate into prediction.
-"""
-
     context += """
 === YOUR TASK ===
-Generate a prediction message for Anoop in Hindi/Hinglish (like a helpful friend WhatsApp message).
-
-The message must include:
-1. Overall footfall prediction: LOW / MEDIUM / HIGH
-2. Which specific time slot will be busiest and why
-3. Top 3 specific items to prep more of (use actual canteen menu items)
-4. One practical tip for tonight
-5. Keep under 100 words, warm and conversational
-
-Start with "Bhai," and sound like a friend who knows his canteen deeply.
-Do NOT use any markdown formatting like **bold** or *italic*. Plain text only.
+Generate a prediction message for Anoop in Hindi/Hinglish like a helpful friend WhatsApp message.
+Include:
+1. Overall footfall: LOW / MEDIUM / HIGH
+2. Which time slot will be busiest and why
+3. Top 3 specific items to prep more of
+4. One practical tip
+Keep under 100 words. Warm and conversational. Start with "Bhai,".
+Do NOT use any markdown formatting. Plain text only.
 Only output the message. Nothing else.
 """
     return context
-
-# ============================================================
-# ROUTES
-# ============================================================
 
 @app.route("/")
 def home():
@@ -251,33 +221,35 @@ def home():
 def predict():
     try:
         realtime_instruction = None
-        realtime_image = None
-
         if request.method == "POST":
             data = request.get_json()
             realtime_instruction = data.get("instruction")
-            image_data = data.get("image")
-            if image_data:
-                realtime_image = image_data
 
-        context = get_full_context(realtime_instruction, realtime_image)
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        context = get_full_context(realtime_instruction)
 
-        if realtime_image:
-            image_bytes = base64.b64decode(realtime_image.split(",")[1])
-            response = model.generate_content([
-                context,
-                {"mime_type": "image/jpeg", "data": image_bytes}
-            ])
-        else:
-            response = model.generate_content(context)
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant for a canteen owner in India. Always respond in Hindi/Hinglish. Never use markdown formatting like ** or *."
+                },
+                {
+                    "role": "user",
+                    "content": context
+                }
+            ],
+            max_tokens=300,
+            temperature=0.7
+        )
 
+        prediction = response.choices[0].message.content
         today = datetime.now()
         feedback_data = load_feedback()
         pattern_alerts = analyze_patterns(feedback_data)
 
         return jsonify({
-            "prediction": response.text,
+            "prediction": prediction,
             "date": today.strftime("%d %B %Y"),
             "day": today.strftime("%A"),
             "time": today.strftime("%I:%M %p"),
@@ -295,10 +267,9 @@ def feedback():
         score = data.get("score")
         predicted_level = data.get("predicted_level")
         note = data.get("note", "")
-
         today = datetime.now()
-        feedback_data = load_feedback()
 
+        feedback_data = load_feedback()
         entry = {
             "date": today.strftime("%Y-%m-%d"),
             "day": today.strftime("%A"),
@@ -307,12 +278,10 @@ def feedback():
             "predicted_level": predicted_level,
             "note": note
         }
-
         feedback_data["history"].append(entry)
         pattern_alerts = analyze_patterns(feedback_data)
         if pattern_alerts:
             feedback_data["pattern_alerts"] = pattern_alerts
-
         save_feedback(feedback_data)
 
         return jsonify({
@@ -328,14 +297,11 @@ def adjust():
         data = request.get_json()
         day = data.get("day")
         adjustment = data.get("adjustment")
-
         feedback_data = load_feedback()
         if "permanent_adjustments" not in feedback_data:
             feedback_data["permanent_adjustments"] = {}
-
         feedback_data["permanent_adjustments"][day] = adjustment
         save_feedback(feedback_data)
-
         return jsonify({"status": "adjusted", "day": day, "adjustment": adjustment})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

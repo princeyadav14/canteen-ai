@@ -2,3 +2,4 @@
 feedback_history.json
 __pycache__/
 *.pyc
+firebase-credentials.json

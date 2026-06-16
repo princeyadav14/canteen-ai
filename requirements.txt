@@ -1,3 +1,4 @@
 flask
-google-generativeai
+groq
 python-dotenv
+firebase-admin
