@@ -12,7 +12,15 @@ app = Flask(__name__)
 
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-cred = credentials.Certificate("firebase-credentials.json")
+import base64
+firebase_creds_b64 = os.environ.get("FIREBASE_CREDENTIALS_B64")
+if firebase_creds_b64:
+    import tempfile
+    creds_json = base64.b64decode(firebase_creds_b64).decode("utf-8")
+    creds_dict = json.loads(creds_json)
+    cred = credentials.Certificate(creds_dict)
+else:
+    cred = credentials.Certificate("firebase-credentials.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
