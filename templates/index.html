@@ -424,6 +424,27 @@
         </div>
     </div>
 
+<div id="weatherCard" style="border-radius:12px;padding:12px 16px;
+    margin-bottom:16px;background:var(--color-background-secondary);
+    border-left:4px solid #3b82f6;display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <div style="font-size:13px;font-weight:500;
+                color:var(--color-text-primary);" id="weatherTitle">
+                🌤️ Kanpur ka mausam
+            </div>
+            <div style="font-size:11px;color:var(--color-text-secondary);
+                margin-top:2px;" id="weatherSubtitle">
+                Load ho raha hai...
+            </div>
+        </div>
+        <div style="font-size:24px;" id="weatherTemp"></div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-secondary);
+        margin-top:6px;padding-top:6px;border-top:1px solid var(--color-border-tertiary);"
+        id="weatherImpact"></div>
+</div>
+
     <!-- Admin panel — only you see this -->
 <div class="admin-panel" id="adminPanel">
     
@@ -675,6 +696,26 @@
                 const messIcon = document.getElementById('messIcon');
                 const messTitle = document.getElementById('messTitle');
                 const messSub = document.getElementById('messSubtitle');
+
+                if (data.weather) {
+                    const w = data.weather;
+                    const weatherCard = document.getElementById('weatherCard');
+                    const icons = {
+                        'Clear': '☀️', 'Clouds': '⛅', 'Rain': '🌧️',
+                        'Thunderstorm': '⛈️', 'Drizzle': '🌦️',
+                        'Snow': '❄️', 'Mist': '🌫️', 'Haze': '🌫️'
+                    };
+                    const icon = icons[w.condition] || '🌤️';
+                    document.getElementById('weatherTitle').textContent = 
+                        `${icon} Kanpur — ${w.condition}`;
+                    document.getElementById('weatherTemp').textContent = 
+                        `${w.temp}°C`;
+                    document.getElementById('weatherSubtitle').textContent = 
+                        `Feels like ${w.feels_like}°C · Humidity ${w.humidity}% · Rain ${w.rain_probability}%`;
+                    document.getElementById('weatherImpact').textContent = 
+                        data.weather_impact || '';
+                    weatherCard.style.display = 'block';
+                }
 
                 if (data.is_bad_mess_day) {
                     messCard.className = 'mess-card mess-bad';
