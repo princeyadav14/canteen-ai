@@ -487,6 +487,13 @@
         ✨ Aaj ka Andaaza Lagao
     </button>
 
+    <button onclick="loadHistory()" style="width:100%;background:transparent;
+    border:1px solid var(--color-border-secondary);border-radius:12px;
+    padding:10px;font-size:13px;color:var(--color-text-secondary);
+    cursor:pointer;margin-bottom:16px;">
+    📊 Pichla history dekho
+</button>
+
     <div class="loading-state" id="loadingState">
         <div class="loading-dots">
             <div class="dot"></div>
@@ -550,6 +557,20 @@
         <div class="thanks-title">Shukriya Anoop Bhai!</div>
         <div class="thanks-sub">Aapka feedback save ho gaya.<br>Kal ki prediction aur behtar hogi.</div>
     </div>
+
+    <!-- History view -->
+<div id="historyCard" style="display:none;margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:500;color:var(--color-text-primary);">
+            📊 Pichhle 7 din
+        </span>
+        <button onclick="document.getElementById('historyCard').style.display='none'" 
+            style="background:none;border:none;font-size:12px;color:var(--color-text-secondary);cursor:pointer;">
+            Band karo ✕
+        </button>
+    </div>
+    <div id="historyList"></div>
+</div>
 
 </div>
 
@@ -844,7 +865,53 @@ async function addEvent() {
 
 loadMenuStatus();
 
-
+async function loadHistory() {
+    try {
+        const r = await fetch('/history');
+        const data = await r.json();
+        const historyCard = document.getElementById('historyCard');
+        const historyList = document.getElementById('historyList');
+        
+        if (!data.history || data.history.length === 0) {
+            historyList.innerHTML = `<div style="text-align:center;font-size:13px;
+                color:var(--color-text-secondary);padding:20px;">
+                Abhi koi history nahi hai. Pehle prediction lo!
+            </div>`;
+        } else {
+            const recent = data.history.slice(-7).reverse();
+            const emojis = {1:'😞', 2:'😕', 3:'😐', 4:'🙂', 5:'😄'};
+            const levels = {'HIGH':'🔴', 'MEDIUM':'🟡', 'LOW':'🟢'};
+            
+            historyList.innerHTML = recent.map(entry => `
+                <div style="background:var(--color-background-secondary);
+                    border-radius:10px;padding:12px;margin-bottom:8px;">
+                    <div style="display:flex;justify-content:space-between;
+                        align-items:center;margin-bottom:4px;">
+                        <span style="font-size:13px;font-weight:500;
+                            color:var(--color-text-primary);">
+                            ${entry.day}, ${entry.date}
+                        </span>
+                        <span style="font-size:18px;">
+                            ${emojis[entry.score] || '—'}
+                        </span>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <span style="font-size:12px;color:var(--color-text-secondary);">
+                            ${levels[entry.predicted_level] || '⚪'} ${entry.predicted_level || 'N/A'}
+                        </span>
+                        ${entry.note ? `<span style="font-size:11px;
+                            color:var(--color-text-tertiary);">— ${entry.note}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        historyCard.style.display = 'block';
+        historyCard.scrollIntoView({behavior: 'smooth'});
+    } catch(e) {
+        console.error(e);
+    }
+}
 </script>
 </body>
 </html>
