@@ -425,16 +425,63 @@
     </div>
 
     <!-- Admin panel — only you see this -->
-    <div class="admin-panel" id="adminPanel">
-        <div class="admin-label">⚡ Special Update (Admin Only)</div>
-        <textarea class="admin-input" id="realtimeInput" rows="3"
-            placeholder="e.g. Aaj mess mein pest control hai, ya hall mein koi event hai..."></textarea>
-        <label class="image-upload-btn" for="imageInput">
-            📷 Notice ya photo attach karo
-        </label>
-        <input type="file" id="imageInput" accept="image/*" onchange="handleImage(this)">
-        <div id="imagePreview" style="font-size:11px;color:#059669;margin-top:6px;"></div>
+<div class="admin-panel" id="adminPanel">
+    
+    <div class="admin-label">⚡ Real-time Override</div>
+    <textarea class="admin-input" id="realtimeInput" rows="3"
+        placeholder="e.g. Aaj mess mein pest control hai, ya hall mein koi event hai..."></textarea>
+    <label class="image-upload-btn" for="imageInput">
+        📷 Notice ya photo attach karo
+    </label>
+    <input type="file" id="imageInput" accept="image/*" onchange="handleImage(this)">
+    <div id="imagePreview" style="font-size:11px;color:#059669;margin-top:6px;"></div>
+
+    <div style="height:1px;background:var(--color-border-tertiary);margin:16px 0;"></div>
+
+    <div class="admin-label">📋 Mess Menu Update</div>
+    <div id="menuStatus" style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px;">
+        Loading menu status...
     </div>
+    
+    <label class="image-upload-btn" for="menuFileInput" id="menuUploadLabel">
+        📤 Mess menu upload karo (PDF/JPG/PNG)
+    </label>
+    <input type="file" id="menuFileInput" accept=".pdf,.jpg,.jpeg,.png" 
+           onchange="uploadMenu(this)" style="display:none;">
+    
+    <div id="menuUploadProgress" style="display:none;font-size:12px;color:#059669;margin-top:8px;">
+        ⏳ Menu extract ho raha hai...
+    </div>
+    
+    <div id="menuUploadResult" style="display:none;margin-top:8px;"></div>
+    
+    <button onclick="revertMenu()" id="revertBtn" style="display:none;
+        width:100%;margin-top:8px;background:#fff3cd;border:1px solid #fcd34d;
+        border-radius:8px;padding:8px;font-size:12px;color:#92400e;cursor:pointer;">
+        ↩ Pichle menu par wapas jao
+    </button>
+
+    <div style="height:1px;background:var(--color-border-tertiary);margin:16px 0;"></div>
+
+    <div class="admin-label">📅 Hostel Event Add Karo</div>
+    <input class="admin-input" id="eventDate" type="date" 
+           style="margin-bottom:8px;padding:8px;">
+    <input class="admin-input" id="eventName" type="text" 
+           placeholder="e.g. Antaragni Day 1, Sports Meet, Freshers Night"
+           style="margin-bottom:8px;padding:8px;">
+    <select class="admin-input" id="eventImpact" style="margin-bottom:8px;padding:8px;">
+        <option value="HIGH_POSITIVE">Canteen mein bahut zyada bheed aayegi</option>
+        <option value="HIGH_NEGATIVE">Students bahar jayenge, canteen mein kam bheed</option>
+        <option value="MEDIUM_POSITIVE">Thodi zyada bheed expected</option>
+        <option value="NEUTRAL">Normal din ki tarah</option>
+    </select>
+    <button onclick="addEvent()" style="width:100%;background:#059669;color:white;
+        border:none;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;">
+        + Event Add Karo
+    </button>
+    <div id="eventStatus" style="font-size:12px;margin-top:8px;"></div>
+
+</div>
 
     <button class="predict-btn" id="predictBtn" onclick="getPrediction()">
         ✨ Aaj ka Andaaza Lagao
@@ -694,6 +741,110 @@
         document.getElementById('alertCard').style.display = 'none';
         currentAlert = null;
     }
+
+    async function loadMenuStatus() {
+    try {
+        const r = await fetch('/get-menu');
+        const data = await r.json();
+        const statusEl = document.getElementById('menuStatus');
+        const revertBtn = document.getElementById('revertBtn');
+        if (data.source === 'hardcoded default') {
+            statusEl.textContent = '⚠️ Abhi April ka hardcoded menu use ho raha hai';
+            revertBtn.style.display = 'none';
+        } else {
+            statusEl.textContent = `✅ Menu uploaded: ${data.source}`;
+            revertBtn.style.display = 'block';
+        }
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+async function uploadMenu(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const progressEl = document.getElementById('menuUploadProgress');
+    const resultEl = document.getElementById('menuUploadResult');
+    const labelEl = document.getElementById('menuUploadLabel');
+    progressEl.style.display = 'block';
+    resultEl.style.display = 'none';
+    labelEl.style.opacity = '0.5';
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const r = await fetch('/upload-menu', {method: 'POST', body: formData});
+        const data = await r.json();
+        progressEl.style.display = 'none';
+        labelEl.style.opacity = '1';
+        resultEl.style.display = 'block';
+        if (data.status === 'success') {
+            resultEl.innerHTML = `<div style="background:#ecfdf5;border-radius:8px;padding:10px;font-size:12px;color:#065f46;">
+                ✅ Menu successfully extract hua!<br>
+                <small>Monday dinner: ${data.menu.Monday?.dinner?.substring(0,50) || 'N/A'}...</small>
+            </div>`;
+            document.getElementById('revertBtn').style.display = 'block';
+            document.getElementById('menuStatus').textContent = '✅ Naya menu save ho gaya';
+        } else {
+            resultEl.innerHTML = `<div style="background:#fef2f2;border-radius:8px;padding:10px;font-size:12px;color:#991b1b;">
+                ❌ Error: ${data.error}
+            </div>`;
+        }
+    } catch(e) {
+        progressEl.style.display = 'none';
+        labelEl.style.opacity = '1';
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `<div style="background:#fef2f2;border-radius:8px;padding:10px;font-size:12px;color:#991b1b;">
+            ❌ Upload failed. Try again.
+        </div>`;
+    }
+    input.value = '';
+}
+
+async function revertMenu() {
+    if (!confirm('Pichle menu par wapas jaana chahte ho?')) return;
+    try {
+        const r = await fetch('/revert-menu', {method: 'POST'});
+        const data = await r.json();
+        if (data.status) {
+            document.getElementById('menuStatus').textContent = '↩ Menu revert ho gaya';
+            document.getElementById('revertBtn').style.display = 'none';
+            document.getElementById('menuUploadResult').style.display = 'none';
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function addEvent() {
+    const date = document.getElementById('eventDate').value;
+    const name = document.getElementById('eventName').value.trim();
+    const impact = document.getElementById('eventImpact').value;
+    const statusEl = document.getElementById('eventStatus');
+    if (!date || !name) {
+        statusEl.textContent = '⚠️ Date aur event name dono zaroori hain';
+        statusEl.style.color = '#dc2626';
+        return;
+    }
+    try {
+        const r = await fetch('/add-event', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({date, name, impact})
+        });
+        const data = await r.json();
+        if (data.status === 'saved') {
+            statusEl.textContent = `✅ Event add ho gaya: ${name}`;
+            statusEl.style.color = '#059669';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventName').value = '';
+        }
+    } catch(e) {
+        statusEl.textContent = '❌ Error saving event';
+        statusEl.style.color = '#dc2626';
+    }
+}
+
+loadMenuStatus();
+
+
 </script>
 </body>
 </html>

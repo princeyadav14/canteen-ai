@@ -2,3 +2,5 @@ flask
 groq
 python-dotenv
 firebase-admin
+requests
+pymupdf
