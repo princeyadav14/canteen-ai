@@ -1,156 +1,245 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Canteen AI - Hall 12</title>
+    <title>DayCue — Know the way, every day</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+        :root {
+            --bg: #f8fafc;
+            --bg2: #ffffff;
+            --bg3: #f1f5f9;
+            --text1: #0f172a;
+            --text2: #475569;
+            --text3: #94a3b8;
+            --border: #e2e8f0;
+            --green: #065f46;
+            --green2: #059669;
+            --green3: #ecfdf5;
+            --green4: #d1fae5;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --bg2: #1e293b;
+            --bg3: #263347;
+            --text1: #f1f5f9;
+            --text2: #94a3b8;
+            --text3: #475569;
+            --border: #334155;
+            --green: #065f46;
+            --green2: #059669;
+            --green3: #064e3b;
+            --green4: #065f46;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        html {
             background: #0f172a;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
             min-height: 100vh;
-            color: #1e293b;
+            color: var(--text1);
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 0 40px rgba(0,0,0,0.2);
         }
 
-        .top-bar {
-            background: linear-gradient(135deg, #064e3b, #065f46);
-            padding: 20px 20px 40px;
-            text-align: center;
-            position: relative;
+        /* ── HEADER ── */
+        .header {
+            background: var(--green);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .top-bar h1 {
+        .header-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-name {
             color: white;
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: -0.3px;
         }
 
-        .top-bar p {
+        .header-slogan {
             color: #6ee7b7;
-            font-size: 13px;
-            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 400;
+            margin-top: 1px;
         }
 
-        .admin-toggle {
-            position: absolute;
-            top: 16px;
-            right: 16px;
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-btn {
             background: rgba(255,255,255,0.15);
             border: none;
-            border-radius: 20px;
-            padding: 6px 12px;
+            border-radius: 8px;
+            padding: 6px 10px;
             color: white;
-            font-size: 11px;
+            font-size: 14px;
             cursor: pointer;
         }
 
-        .main-card {
-            background: white;
-            margin: -20px 16px 0;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            min-height: 80vh;
-        }
-
-        .date-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .date-text {
-            font-size: 13px;
-            color: #64748b;
-        }
-
-        .time-text {
-            font-size: 13px;
-            color: #64748b;
-            font-weight: 600;
-        }
-
-        .mess-card {
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .mess-bad {
-            background: #fef2f2;
-            border-left: 4px solid #ef4444;
-        }
-
-        .mess-good {
-            background: #f0fdf4;
-            border-left: 4px solid #22c55e;
-        }
-
-        .mess-decent {
-            background: #fafafa;
-            border-left: 4px solid #94a3b8;
-        }
-
-        .mess-icon { font-size: 24px; }
-
-        .mess-text h3 {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        .mess-text p {
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 2px;
-        }
-
-        .predict-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #059669, #047857);
-            color: white;
+        .admin-btn {
+            background: rgba(255,255,255,0.15);
             border: none;
-            border-radius: 16px;
-            padding: 18px;
-            font-size: 17px;
-            font-weight: 700;
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
             cursor: pointer;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(5,150,105,0.4);
-            transition: transform 0.1s;
             letter-spacing: 0.3px;
         }
 
-        .predict-btn:active { transform: scale(0.98); }
-        .predict-btn:disabled {
-            background: linear-gradient(135deg, #94a3b8, #64748b);
-            box-shadow: none;
+        /* ── DATE TIME BAR ── */
+        .datetime-bar {
+            background: var(--bg2);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
         }
 
+        .datetime-day {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text1);
+        }
+
+        .datetime-date {
+            font-size: 12px;
+            color: var(--text2);
+            margin-top: 1px;
+        }
+
+        .datetime-time {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--green2);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ── STATUS CARDS ── */
+        .status-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-card {
+            flex: 1;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg2);
+        }
+
+        .status-card-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text3);
+            margin-bottom: 6px;
+        }
+
+        .status-card-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text1);
+        }
+
+        .status-card-sub {
+            font-size: 11px;
+            color: var(--text2);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .mess-bad { border-left: 3px solid #ef4444; }
+        .mess-good { border-left: 3px solid #22c55e; }
+        .mess-decent { border-left: 3px solid #94a3b8; }
+        .weather-card-style { border-left: 3px solid #3b82f6; }
+
+        /* ── PREDICT BUTTON ── */
+        .predict-btn {
+            width: 100%;
+            background: var(--green2);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: 0.2px;
+            box-shadow: 0 4px 12px rgba(5,150,105,0.3);
+        }
+
+        .predict-btn:active { opacity: 0.9; transform: scale(0.99); }
+        .predict-btn:disabled { background: var(--text3); box-shadow: none; }
+
+        .history-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text2);
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* ── LOADING ── */
         .loading-state {
             text-align: center;
-            padding: 30px 0;
+            padding: 24px 0;
             display: none;
         }
 
         .loading-dots {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 10px;
         }
 
         .dot {
-            width: 10px;
-            height: 10px;
-            background: #059669;
+            width: 8px;
+            height: 8px;
+            background: var(--green2);
             border-radius: 50%;
             animation: bounce 1.2s infinite;
         }
@@ -160,44 +249,42 @@
 
         @keyframes bounce {
             0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
+            30% { transform: translateY(-8px); }
         }
 
         .loading-text {
-            font-size: 14px;
-            color: #64748b;
+            font-size: 13px;
+            color: var(--text2);
         }
 
+        /* ── PREDICTION CARD ── */
         .prediction-card {
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: var(--green3);
+            border-radius: 14px;
+            padding: 16px;
             display: none;
-            border: 1px solid #a7f3d0;
-            position: relative;
+            border: 1px solid var(--green4);
         }
 
         .prediction-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
 
-        .prediction-header span {
-            font-size: 12px;
+        .prediction-label {
+            font-size: 11px;
             font-weight: 700;
-            color: #065f46;
+            color: var(--green);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
         }
 
         .level-badge {
-            margin-left: auto;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
         }
 
@@ -206,397 +293,486 @@
         .level-low { background: #f0fdf4; color: #16a34a; }
 
         .prediction-text {
-            font-size: 15px;
-            line-height: 1.8;
-            color: #1e293b;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text1);
         }
 
+        /* ── FEEDBACK ── */
         .feedback-card {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 20px;
+            background: var(--bg2);
+            border-radius: 14px;
+            padding: 16px;
             display: none;
-            margin-bottom: 20px;
+            border: 1px solid var(--border);
         }
 
         .feedback-title {
             font-size: 14px;
-            font-weight: 700;
-            color: #1e293b;
+            font-weight: 600;
+            color: var(--text1);
             text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
-        .feedback-subtitle {
+        .feedback-sub {
             font-size: 12px;
-            color: #94a3b8;
+            color: var(--text3);
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
-        .emoji-scale {
+        .number-scale {
             display: flex;
-            justify-content: space-between;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
-        .emoji-btn {
+        .number-btn {
             flex: 1;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 10px 4px;
+            aspect-ratio: 1;
+            background: var(--bg3);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text2);
             cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
+            font-family: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
         }
 
-        .emoji-btn .emoji { font-size: 22px; display: block; }
-        .emoji-btn .label { font-size: 9px; color: #94a3b8; margin-top: 4px; display: block; }
+        .number-btn .num-label {
+            font-size: 8px;
+            font-weight: 500;
+            color: var(--text3);
+        }
 
-        .emoji-btn.selected {
-            border-color: #059669;
-            background: #ecfdf5;
-            transform: scale(1.05);
+        .number-btn.selected {
+            border-color: var(--green2);
+            background: var(--green3);
+            color: var(--green);
+        }
+
+        .number-btn.selected .num-label {
+            color: var(--green2);
         }
 
         .feedback-note {
             width: 100%;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 13px;
-            outline: none;
-            margin-bottom: 12px;
-            color: #1e293b;
-            resize: none;
-        }
-
-        .submit-btn {
-            width: 100%;
-            background: #1e293b;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .thanks-card {
-            text-align: center;
-            padding: 24px;
-            display: none;
-        }
-
-        .thanks-icon { font-size: 48px; margin-bottom: 12px; }
-        .thanks-title { font-size: 18px; font-weight: 700; color: #065f46; margin-bottom: 6px; }
-        .thanks-sub { font-size: 13px; color: #64748b; }
-
-        .alert-card {
-            background: #fffbeb;
-            border: 1px solid #fcd34d;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .alert-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #92400e;
-            margin-bottom: 6px;
-        }
-
-        .alert-msg {
-            font-size: 12px;
-            color: #78350f;
-            margin-bottom: 12px;
-            line-height: 1.6;
-        }
-
-        .alert-btns {
-            display: flex;
-            gap: 8px;
-        }
-
-        .alert-yes {
-            flex: 1;
-            background: #92400e;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .alert-no {
-            flex: 1;
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        /* Admin panel — hidden by default */
-        .admin-panel {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            display: none;
-            border: 2px dashed #e2e8f0;
-        }
-
-        .admin-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .admin-input {
-            width: 100%;
-            background: white;
-            border: 1px solid #e2e8f0;
+            background: var(--bg3);
+            border: 1px solid var(--border);
             border-radius: 10px;
             padding: 10px 12px;
             font-size: 13px;
             outline: none;
             margin-bottom: 10px;
-            color: #1e293b;
+            color: var(--text1);
             resize: none;
+            font-family: inherit;
         }
 
-        .image-upload-btn {
-            background: white;
-            border: 1px dashed #cbd5e1;
-            border-radius: 10px;
-            padding: 10px;
+        .submit-btn {
             width: 100%;
+            background: var(--text1);
+            color: var(--bg);
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* ── THANKS ── */
+        .thanks-card {
+            text-align: center;
+            padding: 24px 16px;
+            display: none;
+            background: var(--bg2);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .thanks-icon { font-size: 36px; margin-bottom: 8px; }
+        .thanks-title { font-size: 16px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+        .thanks-sub { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+        /* ── ALERT ── */
+        .alert-card {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 12px;
+            padding: 14px;
+            display: none;
+        }
+
+        .alert-title { font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px; }
+        .alert-msg { font-size: 12px; color: #78350f; margin-bottom: 10px; line-height: 1.5; }
+
+        .alert-btns { display: flex; gap: 8px; }
+
+        .alert-yes {
+            flex: 1; background: #92400e; color: white;
+            border: none; border-radius: 8px; padding: 9px;
+            font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+        }
+
+        .alert-no {
+            flex: 1; background: #fef3c7; color: #92400e;
+            border: 1px solid #fcd34d; border-radius: 8px; padding: 9px;
+            font-size: 12px; cursor: pointer; font-family: inherit;
+        }
+
+        /* ── ADMIN PANEL ── */
+        .admin-panel {
+            background: var(--bg2);
+            border-radius: 14px;
+            padding: 16px;
+            display: none;
+            border: 2px dashed var(--border);
+        }
+
+        .admin-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .admin-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 14px 0;
+        }
+
+        .admin-input {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 8px;
+            color: var(--text1);
+            resize: none;
+            font-family: inherit;
+        }
+
+        .upload-btn-label {
+            display: block;
+            background: var(--bg3);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 10px;
             font-size: 12px;
-            color: #64748b;
+            color: var(--text2);
             cursor: pointer;
             text-align: center;
+            font-family: inherit;
+        }
+
+        .add-event-btn {
+            width: 100%;
+            background: var(--green2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .revert-btn {
+            display: none;
+            width: 100%;
+            margin-top: 8px;
+            background: #fff3cd;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 12px;
+            color: #92400e;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* ── HISTORY ── */
+        .history-card {
+            display: none;
+            background: var(--bg2);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .history-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text1);
+        }
+
+        .history-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--text3);
+            cursor: pointer;
+        }
+
+        .history-item {
+            background: var(--bg3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .history-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .history-item-day {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text1);
+        }
+
+        .history-item-score {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--green2);
+        }
+
+        .history-item-bottom {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .history-item-level {
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        .history-item-note {
+            font-size: 11px;
+            color: var(--text3);
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 11px;
+            color: var(--text3);
         }
 
         #imageInput { display: none; }
-
-        .bottom-bar {
-            text-align: center;
-            padding: 20px;
-            font-size: 11px;
-            color: #475569;
-        }
+        #menuFileInput { display: none; }
     </style>
 </head>
 <body>
 
-<div class="top-bar">
-    <h1>🍽️ Canteen AI</h1>
-    <p>Hall 12 · IIT Kanpur</p>
-    <button class="admin-toggle" onclick="toggleAdmin()">⚙️ Admin</button>
+<!-- HEADER -->
+<div class="header">
+    <div class="header-left">
+        <div class="header-name">⚡ DayCue</div>
+        <div class="header-slogan">Know the way, every day.</div>
+    </div>
+    <div class="header-right">
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        <button class="admin-btn" onclick="toggleAdmin()">⚙ Admin</button>
+    </div>
 </div>
 
-<div class="main-card">
-
-    <div class="date-row">
-        <span class="date-text" id="dateText">Aaj ki taiyari</span>
-        <span class="time-text" id="timeText"></span>
+<!-- DATE TIME BAR -->
+<div class="datetime-bar">
+    <div>
+        <div class="datetime-day" id="dayText">—</div>
+        <div class="datetime-date" id="dateText">—</div>
     </div>
+    <div class="datetime-time" id="timeText">—</div>
+</div>
 
-    <div class="mess-card mess-decent" id="messCard">
-        <div class="mess-icon" id="messIcon">🍱</div>
-        <div class="mess-text">
-            <h3 id="messTitle">Mess status load ho raha hai...</h3>
-            <p id="messSubtitle">Prediction ke liye button dabao</p>
+<!-- MAIN -->
+<div class="main">
+
+    <!-- STATUS ROW -->
+    <div class="status-row">
+        <div class="status-card mess-decent" id="messCard">
+            <div class="status-card-label">Mess Dinner</div>
+            <div class="status-card-value" id="messTitle">Loading...</div>
+            <div class="status-card-sub" id="messSubtitle">Click predict to check</div>
+        </div>
+        <div class="status-card weather-card-style" id="weatherCard" style="display:none;">
+            <div class="status-card-label">Kanpur Weather</div>
+            <div class="status-card-value" id="weatherTitle">—</div>
+            <div class="status-card-sub" id="weatherSubtitle">—</div>
         </div>
     </div>
 
-<div id="weatherCard" style="border-radius:12px;padding:12px 16px;
-    margin-bottom:16px;background:var(--color-background-secondary);
-    border-left:4px solid #3b82f6;display:none;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-            <div style="font-size:13px;font-weight:500;
-                color:var(--color-text-primary);" id="weatherTitle">
-                🌤️ Kanpur ka mausam
-            </div>
-            <div style="font-size:11px;color:var(--color-text-secondary);
-                margin-top:2px;" id="weatherSubtitle">
-                Load ho raha hai...
-            </div>
+    <!-- WEATHER IMPACT -->
+    <div id="weatherImpactCard" style="display:none;background:var(--bg2);
+        border-radius:10px;padding:10px 12px;border:1px solid var(--border);
+        font-size:12px;color:var(--text2);line-height:1.5;" id="weatherImpact">
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div class="admin-panel" id="adminPanel">
+
+        <div class="admin-section-title">⚡ Real-time Override</div>
+        <textarea class="admin-input" id="realtimeInput" rows="3"
+            placeholder="e.g. Mess closed today, hall event tonight..."></textarea>
+        <label class="upload-btn-label" for="imageInput">
+            📷 Attach notice or photo
+        </label>
+        <input type="file" id="imageInput" accept="image/*" onchange="handleImage(this)">
+        <div id="imagePreview" style="font-size:11px;color:#059669;margin-top:6px;"></div>
+
+        <div class="admin-divider"></div>
+
+        <div class="admin-section-title">📋 Mess Menu</div>
+        <div id="menuStatus" style="font-size:12px;color:var(--text2);margin-bottom:8px;">
+            Loading...
         </div>
-        <div style="font-size:24px;" id="weatherTemp"></div>
+        <label class="upload-btn-label" for="menuFileInput" id="menuUploadLabel">
+            📤 Upload mess menu (PDF / JPG / PNG)
+        </label>
+        <input type="file" id="menuFileInput" accept=".pdf,.jpg,.jpeg,.png"
+               onchange="uploadMenu(this)">
+        <div id="menuUploadProgress" style="display:none;font-size:12px;
+            color:#059669;margin-top:8px;">⏳ Extracting menu...</div>
+        <div id="menuUploadResult" style="display:none;margin-top:8px;"></div>
+        <button class="revert-btn" onclick="revertMenu()" id="revertBtn">
+            ↩ Revert to previous menu
+        </button>
+
+        <div class="admin-divider"></div>
+
+        <div class="admin-section-title">📅 Add Hostel Event</div>
+        <input class="admin-input" id="eventDate" type="date">
+        <input class="admin-input" id="eventName" type="text"
+            placeholder="e.g. Antaragni Day 1, Sports Meet, Freshers Night">
+        <select class="admin-input" id="eventImpact">
+            <option value="HIGH_POSITIVE">Big event — canteen will be very busy</option>
+            <option value="HIGH_NEGATIVE">Students going out — canteen will be quiet</option>
+            <option value="MEDIUM_POSITIVE">Moderate extra footfall expected</option>
+            <option value="NEUTRAL">Normal day</option>
+        </select>
+        <button class="add-event-btn" onclick="addEvent()">+ Add Event</button>
+        <div id="eventStatus" style="font-size:12px;margin-top:8px;"></div>
+
     </div>
-    <div style="font-size:11px;color:var(--color-text-secondary);
-        margin-top:6px;padding-top:6px;border-top:1px solid var(--color-border-tertiary);"
-        id="weatherImpact"></div>
-</div>
 
-    <!-- Admin panel — only you see this -->
-<div class="admin-panel" id="adminPanel">
-    
-    <div class="admin-label">⚡ Real-time Override</div>
-    <textarea class="admin-input" id="realtimeInput" rows="3"
-        placeholder="e.g. Aaj mess mein pest control hai, ya hall mein koi event hai..."></textarea>
-    <label class="image-upload-btn" for="imageInput">
-        📷 Notice ya photo attach karo
-    </label>
-    <input type="file" id="imageInput" accept="image/*" onchange="handleImage(this)">
-    <div id="imagePreview" style="font-size:11px;color:#059669;margin-top:6px;"></div>
-
-    <div style="height:1px;background:var(--color-border-tertiary);margin:16px 0;"></div>
-
-    <div class="admin-label">📋 Mess Menu Update</div>
-    <div id="menuStatus" style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px;">
-        Loading menu status...
-    </div>
-    
-    <label class="image-upload-btn" for="menuFileInput" id="menuUploadLabel">
-        📤 Mess menu upload karo (PDF/JPG/PNG)
-    </label>
-    <input type="file" id="menuFileInput" accept=".pdf,.jpg,.jpeg,.png" 
-           onchange="uploadMenu(this)" style="display:none;">
-    
-    <div id="menuUploadProgress" style="display:none;font-size:12px;color:#059669;margin-top:8px;">
-        ⏳ Menu extract ho raha hai...
-    </div>
-    
-    <div id="menuUploadResult" style="display:none;margin-top:8px;"></div>
-    
-    <button onclick="revertMenu()" id="revertBtn" style="display:none;
-        width:100%;margin-top:8px;background:#fff3cd;border:1px solid #fcd34d;
-        border-radius:8px;padding:8px;font-size:12px;color:#92400e;cursor:pointer;">
-        ↩ Pichle menu par wapas jao
-    </button>
-
-    <div style="height:1px;background:var(--color-border-tertiary);margin:16px 0;"></div>
-
-    <div class="admin-label">📅 Hostel Event Add Karo</div>
-    <input class="admin-input" id="eventDate" type="date" 
-           style="margin-bottom:8px;padding:8px;">
-    <input class="admin-input" id="eventName" type="text" 
-           placeholder="e.g. Antaragni Day 1, Sports Meet, Freshers Night"
-           style="margin-bottom:8px;padding:8px;">
-    <select class="admin-input" id="eventImpact" style="margin-bottom:8px;padding:8px;">
-        <option value="HIGH_POSITIVE">Canteen mein bahut zyada bheed aayegi</option>
-        <option value="HIGH_NEGATIVE">Students bahar jayenge, canteen mein kam bheed</option>
-        <option value="MEDIUM_POSITIVE">Thodi zyada bheed expected</option>
-        <option value="NEUTRAL">Normal din ki tarah</option>
-    </select>
-    <button onclick="addEvent()" style="width:100%;background:#059669;color:white;
-        border:none;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;">
-        + Event Add Karo
-    </button>
-    <div id="eventStatus" style="font-size:12px;margin-top:8px;"></div>
-
-</div>
-
+    <!-- PREDICT BUTTON -->
     <button class="predict-btn" id="predictBtn" onclick="getPrediction()">
-        ✨ Aaj ka Andaaza Lagao
+        ✦ Get Today's Prediction
     </button>
 
-    <button onclick="loadHistory()" style="width:100%;background:transparent;
-    border:1px solid var(--color-border-secondary);border-radius:12px;
-    padding:10px;font-size:13px;color:var(--color-text-secondary);
-    cursor:pointer;margin-bottom:16px;">
-    📊 Pichla history dekho
-</button>
+    <!-- HISTORY BUTTON -->
+    <button class="history-btn" onclick="loadHistory()">
+        📊 View prediction history
+    </button>
 
+    <!-- LOADING -->
     <div class="loading-state" id="loadingState">
         <div class="loading-dots">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
         </div>
-        <div class="loading-text">AI soch raha hai...</div>
+        <div class="loading-text">AI is thinking...</div>
     </div>
 
+    <!-- ALERT -->
     <div class="alert-card" id="alertCard">
-        <div class="alert-title">🔔 Pattern Notice</div>
+        <div class="alert-title">🔔 Pattern Detected</div>
         <div class="alert-msg" id="alertMsg"></div>
         <div class="alert-btns">
-            <button class="alert-yes" onclick="confirmAdjust()">Haan, badlo permanently</button>
-            <button class="alert-no" onclick="dismissAlert()">Abhi nahi</button>
+            <button class="alert-yes" onclick="confirmAdjust()">Yes, adjust permanently</button>
+            <button class="alert-no" onclick="dismissAlert()">Not now</button>
         </div>
     </div>
 
+    <!-- PREDICTION -->
     <div class="prediction-card" id="predictionCard">
         <div class="prediction-header">
-            <span>🤖 AI Prediction</span>
+            <span class="prediction-label">AI Prediction</span>
             <div class="level-badge" id="levelBadge"></div>
         </div>
         <div class="prediction-text" id="predictionText"></div>
     </div>
 
+    <!-- FEEDBACK -->
     <div class="feedback-card" id="feedbackCard">
-        <div class="feedback-title">Prediction kaisi rahi aaj?</div>
-        <div class="feedback-subtitle">Aapka feedback kal ki prediction behtar banata hai</div>
-        <div class="emoji-scale">
-            <button class="emoji-btn" onclick="selectScore(1)">
-                <span class="emoji">😞</span>
-                <span class="label">Bilkul galat</span>
+        <div class="feedback-title">How accurate was today's prediction?</div>
+        <div class="feedback-sub">Your feedback improves tomorrow's prediction</div>
+        <div class="number-scale">
+            <button class="number-btn" onclick="selectScore(1)">
+                1<span class="num-label">Wrong</span>
             </button>
-            <button class="emoji-btn" onclick="selectScore(2)">
-                <span class="emoji">😕</span>
-                <span class="label">Thoda galat</span>
+            <button class="number-btn" onclick="selectScore(2)">
+                2<span class="num-label">Poor</span>
             </button>
-            <button class="emoji-btn" onclick="selectScore(3)">
-                <span class="emoji">😐</span>
-                <span class="label">Theek tha</span>
+            <button class="number-btn" onclick="selectScore(3)">
+                3<span class="num-label">OK</span>
             </button>
-            <button class="emoji-btn" onclick="selectScore(4)">
-                <span class="emoji">🙂</span>
-                <span class="label">Accha tha</span>
+            <button class="number-btn" onclick="selectScore(4)">
+                4<span class="num-label">Good</span>
             </button>
-            <button class="emoji-btn" onclick="selectScore(5)">
-                <span class="emoji">😄</span>
-                <span class="label">Ekdum sahi</span>
+            <button class="number-btn" onclick="selectScore(5)">
+                5<span class="num-label">Spot on</span>
             </button>
         </div>
         <textarea class="feedback-note" id="feedbackNote" rows="2"
-            placeholder="Kuch aur batana hai? e.g. Bahut zyada bheed aayi raat ko..."></textarea>
+            placeholder="Any additional notes? e.g. More students came after midnight..."></textarea>
         <button class="submit-btn" onclick="submitFeedback()">
-            Feedback Submit Karo ✓
+            Submit Feedback ✓
         </button>
     </div>
 
+    <!-- THANKS -->
     <div class="thanks-card" id="thanksCard">
         <div class="thanks-icon">🙏</div>
-        <div class="thanks-title">Shukriya Anoop Bhai!</div>
-        <div class="thanks-sub">Aapka feedback save ho gaya.<br>Kal ki prediction aur behtar hogi.</div>
+        <div class="thanks-title">Thank you, Anoop Bhai!</div>
+        <div class="thanks-sub">Your feedback has been saved.<br>Tomorrow's prediction will be better.</div>
     </div>
 
-    <!-- History view -->
-<div id="historyCard" style="display:none;margin-top:16px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <span style="font-size:14px;font-weight:500;color:var(--color-text-primary);">
-            📊 Pichhle 7 din
-        </span>
-        <button onclick="document.getElementById('historyCard').style.display='none'" 
-            style="background:none;border:none;font-size:12px;color:var(--color-text-secondary);cursor:pointer;">
-            Band karo ✕
-        </button>
+    <!-- HISTORY -->
+    <div class="history-card" id="historyCard">
+        <div class="history-header">
+            <span class="history-title">📊 Last 7 Days</span>
+            <button class="history-close"
+                onclick="document.getElementById('historyCard').style.display='none'">✕</button>
+        </div>
+        <div id="historyList"></div>
     </div>
-    <div id="historyList"></div>
-</div>
 
 </div>
 
-<div class="bottom-bar">
-    Powered by AI · Hall 12 Canteen · IIT Kanpur
+<!-- FOOTER -->
+<div class="footer">
+    DayCue · Hall 12 Canteen · IIT Kanpur
 </div>
 
 <script>
@@ -605,13 +781,21 @@
     let currentAlert = null;
     let uploadedImage = null;
     let adminVisible = false;
+    let isDark = false;
+
+    function toggleTheme() {
+        isDark = !isDark;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+    }
 
     function updateClock() {
         const now = new Date();
-        const days = ['Ravivar','Somvar','Mangalvar','Budhvar','Guruvar','Shanivar','Ravivar'];
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        document.getElementById('dateText').textContent =
-            days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()];
+        document.getElementById('dayText').textContent = days[now.getDay()];
+        document.getElementById('dateText').textContent = 
+            now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
         let h = now.getHours(), m = now.getMinutes();
         let ampm = h >= 12 ? 'PM' : 'AM';
         h = h % 12 || 12;
@@ -639,7 +823,7 @@
 
     function selectScore(score) {
         selectedScore = score;
-        document.querySelectorAll('.emoji-btn').forEach((btn, i) => {
+        document.querySelectorAll('.number-btn').forEach((btn, i) => {
             btn.classList.toggle('selected', i + 1 === score);
         });
     }
@@ -649,12 +833,10 @@
         const highIdx = t.indexOf('HIGH');
         const medIdx = t.indexOf('MEDIUM');
         const lowIdx = t.indexOf('LOW');
-    
         const indices = [];
         if (highIdx !== -1) indices.push({level: 'HIGH', idx: highIdx});
         if (medIdx !== -1) indices.push({level: 'MEDIUM', idx: medIdx});
         if (lowIdx !== -1) indices.push({level: 'LOW', idx: lowIdx});
-    
         if (indices.length === 0) return 'MEDIUM';
         indices.sort((a, b) => a.idx - b.idx);
         return indices[0].level;
@@ -675,7 +857,7 @@
         feedCard.style.display = 'none';
         thanks.style.display = 'none';
         selectedScore = null;
-        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+        document.querySelectorAll('.number-btn').forEach(b => b.classList.remove('selected'));
 
         try {
             const body = { instruction: instruction || null };
@@ -692,52 +874,43 @@
                 document.getElementById('predictionText').textContent = 'Error: ' + data.error;
                 predCard.style.display = 'block';
             } else {
-                const messCard = document.getElementById('messCard');
-                const messIcon = document.getElementById('messIcon');
-                const messTitle = document.getElementById('messTitle');
-                const messSub = document.getElementById('messSubtitle');
-
                 if (data.weather) {
                     const w = data.weather;
-                    const weatherCard = document.getElementById('weatherCard');
                     const icons = {
-                        'Clear': '☀️', 'Clouds': '⛅', 'Rain': '🌧️',
-                        'Thunderstorm': '⛈️', 'Drizzle': '🌦️',
-                        'Snow': '❄️', 'Mist': '🌫️', 'Haze': '🌫️'
+                        'Clear':'☀️','Clouds':'⛅','Rain':'🌧️',
+                        'Thunderstorm':'⛈️','Drizzle':'🌦️','Haze':'🌫️'
                     };
                     const icon = icons[w.condition] || '🌤️';
-                    document.getElementById('weatherTitle').textContent = 
-                        `${icon} Kanpur — ${w.condition}`;
-                    document.getElementById('weatherTemp').textContent = 
-                        `${w.temp}°C`;
-                    document.getElementById('weatherSubtitle').textContent = 
-                        `Feels like ${w.feels_like}°C · Humidity ${w.humidity}% · Rain ${w.rain_probability}%`;
-                    document.getElementById('weatherImpact').textContent = 
-                        data.weather_impact || '';
-                    weatherCard.style.display = 'block';
+                    document.getElementById('weatherTitle').textContent =
+                        icon + ' ' + w.temp + '°C — ' + w.condition;
+                    document.getElementById('weatherSubtitle').textContent =
+                        'Feels ' + w.feels_like + '°C · Rain ' + w.rain_probability + '%';
+                    document.getElementById('weatherCard').style.display = 'block';
+                    if (data.weather_impact) {
+                        document.getElementById('weatherImpactCard').textContent = data.weather_impact;
+                        document.getElementById('weatherImpactCard').style.display = 'block';
+                    }
                 }
 
+                const messCard = document.getElementById('messCard');
                 if (data.is_bad_mess_day) {
-                    messCard.className = 'mess-card mess-bad';
-                    messIcon.textContent = '⚠️';
-                    messTitle.textContent = 'Aaj mess dinner kharab hai';
-                    messSub.textContent = 'Canteen mein zyada bheed aane ki sambhavna';
+                    messCard.className = 'status-card mess-bad';
+                    document.getElementById('messTitle').textContent = '⚠ Bad mess dinner';
+                    document.getElementById('messSubtitle').textContent = 'Higher canteen footfall likely';
                 } else if (data.mess_quality === 'GOOD') {
-                    messCard.className = 'mess-card mess-good';
-                    messIcon.textContent = '✅';
-                    messTitle.textContent = 'Aaj mess dinner accha hai';
-                    messSub.textContent = 'Dinner time canteen thodi kam busy rahegi';
+                    messCard.className = 'status-card mess-good';
+                    document.getElementById('messTitle').textContent = '✓ Good mess dinner';
+                    document.getElementById('messSubtitle').textContent = 'Lower canteen footfall at dinner';
                 } else {
-                    messCard.className = 'mess-card mess-decent';
-                    messIcon.textContent = '🍱';
-                    messTitle.textContent = 'Aaj mess dinner theek hai';
-                    messSub.textContent = 'Normal footfall expected';
+                    messCard.className = 'status-card mess-decent';
+                    document.getElementById('messTitle').textContent = '~ Average mess dinner';
+                    document.getElementById('messSubtitle').textContent = 'Normal footfall expected';
                 }
 
                 const level = detectLevel(data.prediction);
                 currentPredictedLevel = level;
                 const badge = document.getElementById('levelBadge');
-                badge.textContent = level === 'HIGH' ? '🔴 HIGH' : level === 'LOW' ? '🟢 LOW' : '🟡 MEDIUM';
+                badge.textContent = level;
                 badge.className = 'level-badge level-' + level.toLowerCase();
 
                 document.getElementById('predictionText').textContent = data.prediction;
@@ -751,18 +924,18 @@
                 }
             }
         } catch (e) {
-            document.getElementById('predictionText').textContent = 'Kuch gadbad ho gayi. Dobara try karo.';
+            document.getElementById('predictionText').textContent = 'Something went wrong. Try again.';
             document.getElementById('predictionCard').style.display = 'block';
         }
 
         loading.style.display = 'none';
         btn.disabled = false;
-        btn.textContent = '🔄 Dobara Generate Karo';
+        btn.textContent = '🔄 Generate Again';
     }
 
     async function submitFeedback() {
         if (!selectedScore) {
-            alert('Pehle ek emoji select karo');
+            alert('Please select a score first');
             return;
         }
         const note = document.getElementById('feedbackNote').value.trim();
@@ -779,7 +952,6 @@
             const data = await res.json();
             document.getElementById('feedbackCard').style.display = 'none';
             document.getElementById('thanksCard').style.display = 'block';
-
             if (data.pattern_alert && !currentAlert) {
                 currentAlert = data.pattern_alert;
                 document.getElementById('alertMsg').textContent = data.pattern_alert.message;
@@ -805,154 +977,136 @@
     }
 
     async function loadMenuStatus() {
-    try {
-        const r = await fetch('/get-menu');
-        const data = await r.json();
-        const statusEl = document.getElementById('menuStatus');
-        const revertBtn = document.getElementById('revertBtn');
-        if (data.source === 'hardcoded default') {
-            statusEl.textContent = '⚠️ Abhi April ka hardcoded menu use ho raha hai';
-            revertBtn.style.display = 'none';
-        } else {
-            statusEl.textContent = `✅ Menu uploaded: ${data.source}`;
-            revertBtn.style.display = 'block';
-        }
-    } catch(e) {
-        console.error(e);
+        try {
+            const r = await fetch('/get-menu');
+            const data = await r.json();
+            const statusEl = document.getElementById('menuStatus');
+            const revertBtn = document.getElementById('revertBtn');
+            if (data.source === 'hardcoded default') {
+                statusEl.textContent = '⚠ Using default April menu';
+                revertBtn.style.display = 'none';
+            } else {
+                statusEl.textContent = '✓ Menu uploaded: ' + data.source;
+                revertBtn.style.display = 'block';
+            }
+        } catch(e) { console.error(e); }
     }
-}
 
-async function uploadMenu(input) {
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-    const progressEl = document.getElementById('menuUploadProgress');
-    const resultEl = document.getElementById('menuUploadResult');
-    const labelEl = document.getElementById('menuUploadLabel');
-    progressEl.style.display = 'block';
-    resultEl.style.display = 'none';
-    labelEl.style.opacity = '0.5';
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-        const r = await fetch('/upload-menu', {method: 'POST', body: formData});
-        const data = await r.json();
-        progressEl.style.display = 'none';
-        labelEl.style.opacity = '1';
-        resultEl.style.display = 'block';
-        if (data.status === 'success') {
-            resultEl.innerHTML = `<div style="background:#ecfdf5;border-radius:8px;padding:10px;font-size:12px;color:#065f46;">
-                ✅ Menu successfully extract hua!<br>
-                <small>Monday dinner: ${data.menu.Monday?.dinner?.substring(0,50) || 'N/A'}...</small>
-            </div>`;
-            document.getElementById('revertBtn').style.display = 'block';
-            document.getElementById('menuStatus').textContent = '✅ Naya menu save ho gaya';
-        } else {
-            resultEl.innerHTML = `<div style="background:#fef2f2;border-radius:8px;padding:10px;font-size:12px;color:#991b1b;">
-                ❌ Error: ${data.error}
-            </div>`;
+    async function uploadMenu(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const progressEl = document.getElementById('menuUploadProgress');
+        const resultEl = document.getElementById('menuUploadResult');
+        const labelEl = document.getElementById('menuUploadLabel');
+        progressEl.style.display = 'block';
+        resultEl.style.display = 'none';
+        labelEl.style.opacity = '0.5';
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const r = await fetch('/upload-menu', {method:'POST', body:formData});
+            const data = await r.json();
+            progressEl.style.display = 'none';
+            labelEl.style.opacity = '1';
+            resultEl.style.display = 'block';
+            if (data.status === 'success') {
+                resultEl.innerHTML = `<div style="background:#ecfdf5;border-radius:8px;
+                    padding:10px;font-size:12px;color:#065f46;">
+                    ✓ Menu extracted successfully!<br>
+                    <small>Monday dinner: ${data.menu.Monday?.dinner?.substring(0,50)||'N/A'}...</small>
+                </div>`;
+                document.getElementById('revertBtn').style.display = 'block';
+                document.getElementById('menuStatus').textContent = '✓ New menu saved';
+            } else {
+                resultEl.innerHTML = `<div style="background:#fef2f2;border-radius:8px;
+                    padding:10px;font-size:12px;color:#991b1b;">✗ Error: ${data.error}</div>`;
+            }
+        } catch(e) {
+            progressEl.style.display = 'none';
+            labelEl.style.opacity = '1';
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = `<div style="background:#fef2f2;border-radius:8px;
+                padding:10px;font-size:12px;color:#991b1b;">✗ Upload failed. Try again.</div>`;
         }
-    } catch(e) {
-        progressEl.style.display = 'none';
-        labelEl.style.opacity = '1';
-        resultEl.style.display = 'block';
-        resultEl.innerHTML = `<div style="background:#fef2f2;border-radius:8px;padding:10px;font-size:12px;color:#991b1b;">
-            ❌ Upload failed. Try again.
-        </div>`;
+        input.value = '';
     }
-    input.value = '';
-}
 
-async function revertMenu() {
-    if (!confirm('Pichle menu par wapas jaana chahte ho?')) return;
-    try {
-        const r = await fetch('/revert-menu', {method: 'POST'});
-        const data = await r.json();
-        if (data.status) {
-            document.getElementById('menuStatus').textContent = '↩ Menu revert ho gaya';
-            document.getElementById('revertBtn').style.display = 'none';
-            document.getElementById('menuUploadResult').style.display = 'none';
+    async function revertMenu() {
+        if (!confirm('Revert to previous menu?')) return;
+        try {
+            const r = await fetch('/revert-menu', {method:'POST'});
+            const data = await r.json();
+            if (data.status) {
+                document.getElementById('menuStatus').textContent = '↩ Reverted to previous menu';
+                document.getElementById('revertBtn').style.display = 'none';
+                document.getElementById('menuUploadResult').style.display = 'none';
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function addEvent() {
+        const date = document.getElementById('eventDate').value;
+        const name = document.getElementById('eventName').value.trim();
+        const impact = document.getElementById('eventImpact').value;
+        const statusEl = document.getElementById('eventStatus');
+        if (!date || !name) {
+            statusEl.textContent = '⚠ Date and event name are required';
+            statusEl.style.color = '#dc2626';
+            return;
         }
-    } catch(e) { console.error(e); }
-}
-
-async function addEvent() {
-    const date = document.getElementById('eventDate').value;
-    const name = document.getElementById('eventName').value.trim();
-    const impact = document.getElementById('eventImpact').value;
-    const statusEl = document.getElementById('eventStatus');
-    if (!date || !name) {
-        statusEl.textContent = '⚠️ Date aur event name dono zaroori hain';
-        statusEl.style.color = '#dc2626';
-        return;
-    }
-    try {
-        const r = await fetch('/add-event', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({date, name, impact})
-        });
-        const data = await r.json();
-        if (data.status === 'saved') {
-            statusEl.textContent = `✅ Event add ho gaya: ${name}`;
-            statusEl.style.color = '#059669';
-            document.getElementById('eventDate').value = '';
-            document.getElementById('eventName').value = '';
+        try {
+            const r = await fetch('/add-event', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({date, name, impact})
+            });
+            const data = await r.json();
+            if (data.status === 'saved') {
+                statusEl.textContent = '✓ Event added: ' + name;
+                statusEl.style.color = '#059669';
+                document.getElementById('eventDate').value = '';
+                document.getElementById('eventName').value = '';
+            }
+        } catch(e) {
+            statusEl.textContent = '✗ Error saving event';
+            statusEl.style.color = '#dc2626';
         }
-    } catch(e) {
-        statusEl.textContent = '❌ Error saving event';
-        statusEl.style.color = '#dc2626';
     }
-}
 
-loadMenuStatus();
-
-async function loadHistory() {
-    try {
-        const r = await fetch('/history');
-        const data = await r.json();
-        const historyCard = document.getElementById('historyCard');
-        const historyList = document.getElementById('historyList');
-        
-        if (!data.history || data.history.length === 0) {
-            historyList.innerHTML = `<div style="text-align:center;font-size:13px;
-                color:var(--color-text-secondary);padding:20px;">
-                Abhi koi history nahi hai. Pehle prediction lo!
-            </div>`;
-        } else {
-            const recent = data.history.slice(-7).reverse();
-            const emojis = {1:'😞', 2:'😕', 3:'😐', 4:'🙂', 5:'😄'};
-            const levels = {'HIGH':'🔴', 'MEDIUM':'🟡', 'LOW':'🟢'};
-            
-            historyList.innerHTML = recent.map(entry => `
-                <div style="background:var(--color-background-secondary);
-                    border-radius:10px;padding:12px;margin-bottom:8px;">
-                    <div style="display:flex;justify-content:space-between;
-                        align-items:center;margin-bottom:4px;">
-                        <span style="font-size:13px;font-weight:500;
-                            color:var(--color-text-primary);">
-                            ${entry.day}, ${entry.date}
-                        </span>
-                        <span style="font-size:18px;">
-                            ${emojis[entry.score] || '—'}
-                        </span>
+    async function loadHistory() {
+        try {
+            const r = await fetch('/history');
+            const data = await r.json();
+            const historyCard = document.getElementById('historyCard');
+            const historyList = document.getElementById('historyList');
+            if (!data.history || data.history.length === 0) {
+                historyList.innerHTML = `<div style="text-align:center;font-size:13px;
+                    color:var(--text2);padding:20px;">
+                    No history yet. Get your first prediction!</div>`;
+            } else {
+                const recent = data.history.slice(-7).reverse();
+                const levels = {'HIGH':'🔴','MEDIUM':'🟡','LOW':'🟢'};
+                historyList.innerHTML = recent.map(entry => `
+                    <div class="history-item">
+                        <div class="history-item-top">
+                            <span class="history-item-day">${entry.day}, ${entry.date}</span>
+                            <span class="history-item-score">${entry.score ? entry.score + '/5' : '—'}</span>
+                        </div>
+                        <div class="history-item-bottom">
+                            <span class="history-item-level">
+                                ${levels[entry.predicted_level]||'⚪'} ${entry.predicted_level||'N/A'}
+                            </span>
+                            ${entry.note ? `<span class="history-item-note">— ${entry.note}</span>` : ''}
+                        </div>
                     </div>
-                    <div style="display:flex;gap:8px;align-items:center;">
-                        <span style="font-size:12px;color:var(--color-text-secondary);">
-                            ${levels[entry.predicted_level] || '⚪'} ${entry.predicted_level || 'N/A'}
-                        </span>
-                        ${entry.note ? `<span style="font-size:11px;
-                            color:var(--color-text-tertiary);">— ${entry.note}</span>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        historyCard.style.display = 'block';
-        historyCard.scrollIntoView({behavior: 'smooth'});
-    } catch(e) {
-        console.error(e);
+                `).join('');
+            }
+            historyCard.style.display = 'block';
+            historyCard.scrollIntoView({behavior:'smooth'});
+        } catch(e) { console.error(e); }
     }
-}
+
+    loadMenuStatus();
 </script>
 </body>
 </html>
