@@ -307,6 +307,40 @@ def analyze_patterns(feedback_data):
                 })
     return alerts if alerts else None
 
+def log_usage(request):
+    try:
+        user_agent = request.headers.get('User-Agent', 'unknown')
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        
+        today = datetime.now()
+        
+        device = "unknown"
+        if 'android' in user_agent.lower():
+            device = "Android"
+        if 'iphone' in user_agent.lower():
+            device = "iPhone"
+        
+        import re
+        model_match = re.search(r';\s*([A-Z0-9]+)\)', user_agent)
+        device_model = model_match.group(1) if model_match else "unknown"
+        
+        log_entry = {
+            "timestamp": today.strftime("%Y-%m-%d %H:%M:%S"),
+            "date": today.strftime("%Y-%m-%d"),
+            "day": today.strftime("%A"),
+            "time": today.strftime("%H:%M"),
+            "device": device,
+            "device_model": device_model,
+            "user_agent": user_agent,
+            "ip_address": ip_address
+        }
+        
+        db.collection("canteen").document("usage_log").collection("sessions").add(log_entry)
+        print(f"Usage logged: {today.strftime('%Y-%m-%d %H:%M')} from {device} {device_model}")
+        
+    except Exception as e:
+        print(f"Usage log error: {e}")
+
 def get_full_context(realtime_instruction=None):
     today = datetime.now()
     date_str = today.strftime("%Y-%m-%d")
@@ -430,6 +464,8 @@ def predict():
         if request.method == "POST":
             data = request.get_json()
             realtime_instruction = data.get("instruction")
+
+        log_usage(request)
 
         context = get_full_context(realtime_instruction)
 
