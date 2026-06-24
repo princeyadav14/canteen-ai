@@ -466,33 +466,106 @@ def predict():
             realtime_instruction = data.get("instruction")
 
         log_usage(request)
-
         context = get_full_context(realtime_instruction)
 
-        response = groq_client.chat.completions.create(
+        reasoning_prompt = context + """
+=== YOUR TASK — CALL 1: STRUCTURED REASONING ===
+Analyze all the context above and return ONLY a valid JSON object.
+No explanation, no markdown, no extra text. Just the JSON.
+
+{
+  "footfall_level": "HIGH or MEDIUM or LOW",
+  "confidence": 0.0 to 1.0,
+  "busiest_slot": "e.g. 10pm - 2am",
+  "reasoning": "2-3 sentence explanation of why in English",
+  "top_items": ["item1", "item2", "item3"],
+  "practical_tip": "One specific actionable tip for Anoop in English",
+  "weather_factor": "HIGH or LOW or NONE",
+  "mess_factor": "HIGH or LOW or NONE",
+  "academic_factor": "HIGH or LOW or NONE"
+}
+
+Base your decision on all signals: mess quality, day of week, weather, academic calendar, hostel events, time of day, and feedback history.
+Return ONLY the JSON. Nothing else.
+"""
+
+        reasoning_response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant for a canteen owner in India. Always respond in Hindi/Hinglish. Never use markdown formatting like ** or *."
+                    "content": "You are a demand prediction engine. Return only valid JSON. No markdown, no explanation, no extra text."
                 },
                 {
                     "role": "user",
-                    "content": context
+                    "content": reasoning_prompt
                 }
             ],
-            max_tokens=300,
+            max_tokens=400,
+            temperature=0.3
+        )
+
+        reasoning_text = reasoning_response.choices[0].message.content.strip()
+        reasoning_text = reasoning_text.replace("```json", "").replace("```", "").strip()
+        
+        try:
+            structured = json.loads(reasoning_text)
+        except:
+            structured = {
+                "footfall_level": "MEDIUM",
+                "confidence": 0.5,
+                "busiest_slot": "10pm - 2am",
+                "reasoning": "Could not parse structured response",
+                "top_items": ["Samosa", "Cold Drinks", "Paneer Tikka"],
+                "practical_tip": "Stock standard items",
+                "weather_factor": "NONE",
+                "mess_factor": "NONE",
+                "academic_factor": "NONE"
+            }
+
+        hindi_prompt = f"""
+You are a helpful friend of Anoop who runs Hall 12 canteen at IIT Kanpur.
+
+Based on this analysis:
+- Footfall today: {structured['footfall_level']}
+- Busiest time: {structured['busiest_slot']}
+- Top items to prep: {', '.join(structured['top_items'])}
+- Key reason: {structured['reasoning']}
+- Practical tip: {structured['practical_tip']}
+
+Write a warm, conversational Hindi/Hinglish message to Anoop.
+Start with "Bhai,"
+Keep it under 60 words.
+Do NOT repeat the structured data mechanically — weave it naturally into friendly advice.
+Do NOT use any markdown formatting.
+Only output the message. Nothing else.
+"""
+
+        hindi_response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You write warm Hindi/Hinglish messages. Never use markdown formatting like ** or *."
+                },
+                {
+                    "role": "user",
+                    "content": hindi_prompt
+                }
+            ],
+            max_tokens=200,
             temperature=0.7
         )
 
-        prediction = response.choices[0].message.content
+        hindi_message = hindi_response.choices[0].message.content.strip()
+        weather_data = get_weather()
         today = datetime.now()
         feedback_data = load_feedback()
         pattern_alerts = analyze_patterns(feedback_data)
 
-        weather_data = get_weather()
         return jsonify({
-            "prediction": prediction,
+            "prediction": hindi_message,
+            "structured": structured,
             "date": today.strftime("%d %B %Y"),
             "day": today.strftime("%A"),
             "time": today.strftime("%I:%M %p"),
@@ -502,9 +575,10 @@ def predict():
             "weather": weather_data["current"] if weather_data else None,
             "weather_impact": weather_data["impact"] if weather_data else None
         })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 @app.route("/feedback", methods=["POST"])
 def feedback():
     try:
