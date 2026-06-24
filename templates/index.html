@@ -732,6 +732,29 @@
         📊 View prediction history
     </button>
 
+    <button class="history-btn" onclick="loadAccuracy()" style="margin-top:-8px;">
+    📈 View accuracy trend
+</button>
+
+    <div id="accuracyCard" style="display:none;background:var(--bg2);
+    border-radius:14px;padding:16px;border:1px solid var(--border);margin-top:-4px;">
+    <div style="display:flex;justify-content:space-between;
+        align-items:center;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:600;color:var(--text1);">
+            📈 Prediction Accuracy
+        </span>
+        <button onclick="document.getElementById('accuracyCard').style.display='none'"
+            style="background:none;border:none;font-size:18px;
+            color:var(--text3);cursor:pointer;">✕</button>
+    </div>
+    <div id="accuracyOverall" style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:36px;font-weight:700;color:var(--green2);"
+            id="overallPct">—</div>
+        <div style="font-size:12px;color:var(--text2);">Overall accuracy</div>
+    </div>
+    <div id="accuracyWeeks"></div>
+</div>
+
     <!-- LOADING -->
     <div class="loading-state" id="loadingState">
         <div class="loading-dots">
@@ -1296,6 +1319,49 @@ async function submitPendingFeedback() {
 
 function skipPendingFeedback() {
     document.getElementById('pendingFeedbackCard').style.display = 'none';
+}
+
+async function loadAccuracy() {
+    try {
+        const r = await fetch('/accuracy');
+        const data = await r.json();
+        const card = document.getElementById('accuracyCard');
+        
+        document.getElementById('overallPct').textContent = data.overall + '%';
+        
+        const weeksEl = document.getElementById('accuracyWeeks');
+        if (!data.weeks || data.weeks.length === 0) {
+            weeksEl.innerHTML = `<div style="text-align:center;font-size:13px;
+                color:var(--text2);padding:10px;">
+                No accuracy data yet. Keep using DayCue daily!</div>`;
+        } else {
+            weeksEl.innerHTML = data.weeks.map((w, i) => `
+                <div style="margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;
+                        align-items:center;margin-bottom:6px;">
+                        <span style="font-size:12px;font-weight:600;
+                            color:var(--text1);">Week of ${w.week}</span>
+                        <span style="font-size:13px;font-weight:700;
+                            color:${w.accuracy >= 70 ? '#16a34a' : w.accuracy >= 50 ? '#ca8a04' : '#dc2626'};">
+                            ${w.accuracy}%
+                        </span>
+                    </div>
+                    <div style="background:var(--bg3);border-radius:20px;height:8px;overflow:hidden;">
+                        <div style="height:100%;border-radius:20px;
+                            background:${w.accuracy >= 70 ? '#16a34a' : w.accuracy >= 50 ? '#ca8a04' : '#dc2626'};
+                            width:${w.accuracy}%;transition:width 0.5s;">
+                        </div>
+                    </div>
+                    <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+                        ${w.accurate} accurate out of ${w.total} predictions
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        card.style.display = 'block';
+        card.scrollIntoView({behavior: 'smooth'});
+    } catch(e) { console.error(e); }
 }
 
     loadMenuStatus();
