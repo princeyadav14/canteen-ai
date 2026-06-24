@@ -684,6 +684,44 @@
 
     </div>
 
+    <!-- PENDING FEEDBACK CARD -->
+<div id="pendingFeedbackCard" style="display:none;background:#fffbeb;
+    border:1px solid #fcd34d;border-radius:14px;padding:16px;margin-bottom:4px;">
+    <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px;">
+        ⏳ Kal ki prediction kaisi rahi?
+    </div>
+    <div style="font-size:12px;color:#78350f;margin-bottom:12px;" id="pendingDateText">
+        Rate karo pehle, phir aaj ki prediction milegi
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;" id="pendingScaleRow">
+        <button class="number-btn" onclick="selectPendingScore(1)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
+            1
+        </button>
+        <button class="number-btn" onclick="selectPendingScore(2)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
+            2
+        </button>
+        <button class="number-btn" onclick="selectPendingScore(3)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
+            3
+        </button>
+        <button class="number-btn" onclick="selectPendingScore(4)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
+            4
+        </button>
+        <button class="number-btn" onclick="selectPendingScore(5)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
+            5
+        </button>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;
+        color:#92400e;margin-bottom:10px;padding:0 2px;">
+        <span>Bilkul galat</span>
+        <span>Ekdum sahi</span>
+    </div>
+    <button onclick="skipPendingFeedback()" style="width:100%;background:transparent;
+        border:1px solid #fcd34d;border-radius:8px;padding:8px;font-size:12px;
+        color:#92400e;cursor:pointer;font-family:inherit;">
+        Baad mein dunga ✕
+    </button>
+</div>
+
     <!-- PREDICT BUTTON -->
     <button class="predict-btn" id="predictBtn" onclick="getPrediction()">
         ✦ Get Today's Prediction
@@ -1206,7 +1244,62 @@
         } catch(e) { console.error(e); }
     }
 
+let pendingEntry = null;
+let pendingScore = null;
+
+async function checkPendingFeedback() {
+    try {
+        const r = await fetch('/pending-feedback');
+        const data = await r.json();
+        if (data.pending) {
+            pendingEntry = data.pending;
+            const card = document.getElementById('pendingFeedbackCard');
+            document.getElementById('pendingDateText').textContent = 
+                `${pendingEntry.day}, ${pendingEntry.date} ki prediction — rate karo`;
+            card.style.display = 'block';
+        }
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+function selectPendingScore(score) {
+    pendingScore = score;
+    const btns = document.getElementById('pendingScaleRow').querySelectorAll('button');
+    btns.forEach((btn, i) => {
+        btn.style.background = i + 1 === score ? '#92400e' : 'white';
+        btn.style.color = i + 1 === score ? 'white' : '#92400e';
+    });
+    setTimeout(() => submitPendingFeedback(), 500);
+}
+
+async function submitPendingFeedback() {
+    if (!pendingScore || !pendingEntry) return;
+    try {
+        await fetch('/feedback', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                score: pendingScore,
+                predicted_level: pendingEntry.predicted_level,
+                note: '',
+                date: pendingEntry.date,
+                day: pendingEntry.day,
+                is_pending_update: true
+            })
+        });
+        document.getElementById('pendingFeedbackCard').style.display = 'none';
+        pendingEntry = null;
+        pendingScore = null;
+    } catch(e) { console.error(e); }
+}
+
+function skipPendingFeedback() {
+    document.getElementById('pendingFeedbackCard').style.display = 'none';
+}
+
     loadMenuStatus();
+    checkPendingFeedback();
 </script>
 </body>
 </html>

@@ -597,7 +597,21 @@ def feedback():
             "predicted_level": predicted_level,
             "note": note
         }
-        feedback_data["history"].append(entry)
+        is_pending_update = data.get("is_pending_update", False)
+        pending_date = data.get("date")
+        
+        if is_pending_update and pending_date:
+            updated = False
+            for i, h in enumerate(feedback_data["history"]):
+                if h.get("date") == pending_date and not h.get("score"):
+                    feedback_data["history"][i]["score"] = score
+                    feedback_data["history"][i]["note"] = note
+                    updated = True
+                    break
+            if not updated:
+                feedback_data["history"].append(entry)
+        else:
+            feedback_data["history"].append(entry)
         pattern_alerts = analyze_patterns(feedback_data)
         if pattern_alerts:
             feedback_data["pattern_alerts"] = pattern_alerts
@@ -704,6 +718,28 @@ def history():
     try:
         feedback_data = load_feedback()
         return jsonify({"history": feedback_data.get("history", [])})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/pending-feedback", methods=["GET"])
+def pending_feedback():
+    try:
+        feedback_data = load_feedback()
+        history = feedback_data.get("history", [])
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        yesterday = (datetime.now() - __import__('datetime').timedelta(days=1)).strftime("%Y-%m-%d")
+        
+        pending = None
+        for entry in reversed(history):
+            if entry.get("date") == yesterday and not entry.get("score"):
+                pending = entry
+                break
+            if entry.get("date") == today and not entry.get("score"):
+                pending = entry
+                break
+                
+        return jsonify({"pending": pending})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
