@@ -715,13 +715,62 @@
     </div>
 
     <!-- PREDICTION -->
-    <div class="prediction-card" id="predictionCard">
-        <div class="prediction-header">
-            <span class="prediction-label">AI Prediction</span>
-            <div class="level-badge" id="levelBadge"></div>
+<div class="prediction-card" id="predictionCard">
+    
+    <!-- Row 1: Level + Confidence -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div>
+            <div style="font-size:11px;font-weight:700;color:var(--green);
+                text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">
+                Today's Prediction
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div class="level-badge" id="levelBadge"></div>
+                <div style="font-size:11px;color:var(--text2);" id="confidenceText"></div>
+            </div>
         </div>
-        <div class="prediction-text" id="predictionText"></div>
+        <div style="text-align:right;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:2px;">Busiest slot</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text1);" 
+                id="busiestSlot">—</div>
+        </div>
     </div>
+
+    <!-- Row 2: Signal factors -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;" id="factorRow">
+    </div>
+
+    <!-- Row 3: Top items -->
+    <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);
+            text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">
+            Prep these today
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="topItems"></div>
+    </div>
+
+    <!-- Row 4: Practical tip -->
+    <div style="background:var(--bg3);border-radius:10px;padding:10px 12px;
+        margin-bottom:14px;" id="tipCard" style="display:none;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);
+            text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">
+            💡 Tip
+        </div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5;" 
+            id="practicalTip"></div>
+    </div>
+
+    <!-- Row 5: Hindi message -->
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);
+            text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">
+            Anoop Bhai ke liye
+        </div>
+        <div style="font-size:14px;line-height:1.7;color:var(--text1);" 
+            id="predictionText"></div>
+    </div>
+
+</div>
 
     <!-- FEEDBACK -->
     <div class="feedback-card" id="feedbackCard">
@@ -907,11 +956,62 @@
                     document.getElementById('messSubtitle').textContent = 'Normal footfall expected';
                 }
 
-                const level = detectLevel(data.prediction);
+                const s = data.structured;
+                const level = s ? s.footfall_level : detectLevel(data.prediction);
                 currentPredictedLevel = level;
+
                 const badge = document.getElementById('levelBadge');
                 badge.textContent = level;
                 badge.className = 'level-badge level-' + level.toLowerCase();
+
+                if (s) {
+                    const confidence = Math.round(s.confidence * 100);
+                    document.getElementById('confidenceText').textContent = 
+                        confidence + '% confidence';
+
+                    document.getElementById('busiestSlot').textContent = 
+                        s.busiest_slot || '—';
+
+                    const factorRow = document.getElementById('factorRow');
+                    factorRow.innerHTML = '';
+                    const factors = [
+                        {label: 'Weather', value: s.weather_factor},
+                        {label: 'Mess', value: s.mess_factor},
+                        {label: 'Academic', value: s.academic_factor}
+                    ];
+                    const factorColors = {
+                        'HIGH': 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
+                        'LOW': 'background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;',
+                        'NONE': 'background:var(--bg3);color:var(--text3);border:1px solid var(--border);'
+                    };
+                    factors.forEach(f => {
+                        const chip = document.createElement('div');
+                        chip.style.cssText = `font-size:10px;font-weight:600;
+                            border-radius:20px;padding:3px 8px;
+                            ${factorColors[f.value] || factorColors['NONE']}`;
+                        chip.textContent = f.label + ': ' + (f.value || 'N/A');
+                        factorRow.appendChild(chip);
+                    });
+
+                    const topItems = document.getElementById('topItems');
+                    topItems.innerHTML = '';
+                    if (s.top_items && s.top_items.length > 0) {
+                        s.top_items.forEach(item => {
+                            const chip = document.createElement('div');
+                            chip.style.cssText = `font-size:12px;font-weight:500;
+                                background:var(--green3);color:var(--green);
+                                border:1px solid var(--green4);
+                                border-radius:20px;padding:4px 12px;`;
+                            chip.textContent = item;
+                            topItems.appendChild(chip);
+                        });
+                    }
+
+                    if (s.practical_tip) {
+                        document.getElementById('practicalTip').textContent = s.practical_tip;
+                        document.getElementById('tipCard').style.display = 'block';
+                    }
+                }
 
                 document.getElementById('predictionText').textContent = data.prediction;
                 predCard.style.display = 'block';
