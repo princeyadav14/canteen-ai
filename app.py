@@ -563,6 +563,24 @@ Only output the message. Nothing else.
         feedback_data = load_feedback()
         pattern_alerts = analyze_patterns(feedback_data)
 
+        today_str = today.strftime("%Y-%m-%d")
+        already_logged_today = any(
+            h.get("date") == today_str 
+            for h in feedback_data.get("history", [])
+        )
+        
+        if not already_logged_today:
+            prediction_entry = {
+                "date": today_str,
+                "day": today.strftime("%A"),
+                "time": today.strftime("%H:%M"),
+                "predicted_level": structured.get("footfall_level", "MEDIUM"),
+                "score": None,
+                "note": ""
+            }
+            feedback_data["history"].append(prediction_entry)
+            save_feedback(feedback_data)
+
         return jsonify({
             "prediction": hindi_message,
             "structured": structured,
