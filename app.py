@@ -448,11 +448,16 @@ def get_full_context(realtime_instruction=None):
         events_ref = db.collection("canteen").document("events")
         events_doc = events_ref.get()
         hostel_event = None
+        quiz_week_active = False
         if events_doc.exists:
-            events = events_doc.to_dict().get("events", {})
+            events_data = events_doc.to_dict()
+            events = events_data.get("events", {})
             hostel_event = events.get(date_str)
+            quiz_week_active = events_data.get("quiz_week_active", False)
     except:
         hostel_event = None
+        quiz_week_active = False
+    
     current_menu, menu_source = get_mess_menu()
     mess_today = current_menu.get(day_name, {})
     feedback_data = load_feedback()
@@ -560,6 +565,8 @@ Weather effect on snacks (NOT on meal decisions — both mess and canteen are in
 Exam/quiz season effect on midnight rush:
 - During mid-sem/end-sem exam weeks: Midnight rush significantly higher than normal
 - Quiz weeks (manually flagged): Moderate increase in midnight rush
+- Quiz week currently active: {quiz_week_active}
+{f"IMPORTANT: Quiz week is ON — midnight rush will be HIGHER than normal tonight. Students studying late will come for snacks." if quiz_week_active else ""}
 
 === MOST POPULAR ITEMS ===
 Snacks: {', '.join(POPULAR_ITEMS['snacks'])}
@@ -949,6 +956,39 @@ def accuracy():
         overall = round(sum(w["accurate"] for w in week_list) / sum(w["total"] for w in week_list) * 100) if week_list else 0
         
         return jsonify({"weeks": week_list, "overall": overall})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/quiz-week", methods=["POST"])
+def quiz_week():
+    try:
+        data = request.get_json()
+        active = data.get("active", False)
+        
+        events_ref = db.collection("canteen").document("events")
+        events_doc = events_ref.get()
+        
+        if events_doc.exists:
+            events_data = events_doc.to_dict()
+        else:
+            events_data = {"events": {}}
+            
+        events_data["quiz_week_active"] = active
+        events_ref.set(events_data)
+        
+        return jsonify({"status": "saved", "quiz_week_active": active})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/quiz-week-status", methods=["GET"])
+def quiz_week_status():
+    try:
+        events_ref = db.collection("canteen").document("events")
+        events_doc = events_ref.get()
+        active = False
+        if events_doc.exists:
+            active = events_doc.to_dict().get("quiz_week_active", False)
+        return jsonify({"quiz_week_active": active})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

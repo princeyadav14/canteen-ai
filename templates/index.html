@@ -669,6 +669,34 @@
 
         <div class="admin-divider"></div>
 
+        <div class="admin-divider"></div>
+
+        <div class="admin-section-title">📝 Quiz Week</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;
+            padding:10px 0;">
+            <div>
+                <div style="font-size:13px;font-weight:500;color:var(--text1);">
+                    Quiz week active
+                </div>
+                <div style="font-size:11px;color:var(--text2);margin-top:2px;">
+                    Midnight rush will be predicted higher
+                </div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;">
+                <input type="checkbox" id="quizWeekToggle" 
+                    onchange="toggleQuizWeek(this.checked)"
+                    style="opacity:0;width:0;height:0;">
+                <span id="quizSlider" style="position:absolute;cursor:pointer;
+                    top:0;left:0;right:0;bottom:0;background:#cbd5e1;
+                    border-radius:24px;transition:0.3s;">
+                    <span style="position:absolute;content:'';height:18px;width:18px;
+                        left:3px;bottom:3px;background:white;border-radius:50%;
+                        transition:0.3s;" id="quizKnob"></span>
+                </span>
+            </label>
+        </div>
+        <div id="quizWeekStatus" style="font-size:11px;color:var(--text2);margin-bottom:8px;"></div>
+
         <div class="admin-section-title">📅 Add Hostel Event</div>
         <input class="admin-input" id="eventDate" type="date">
         <input class="admin-input" id="eventName" type="text"
@@ -1364,9 +1392,44 @@ async function loadAccuracy() {
         card.scrollIntoView({behavior: 'smooth'});
     } catch(e) { console.error(e); }
 }
+async function toggleQuizWeek(active) {
+    try {
+        const r = await fetch('/quiz-week', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({active: active})
+        });
+        const data = await r.json();
+        const statusEl = document.getElementById('quizWeekStatus');
+        const knob = document.getElementById('quizKnob');
+        const slider = document.getElementById('quizSlider');
+        if (active) {
+            statusEl.textContent = '✓ Quiz week ON — midnight rush prediction increased';
+            statusEl.style.color = '#059669';
+            slider.style.background = '#059669';
+            knob.style.transform = 'translateX(20px)';
+        } else {
+            statusEl.textContent = 'Quiz week OFF — normal midnight prediction';
+            statusEl.style.color = 'var(--text3)';
+            slider.style.background = '#cbd5e1';
+            knob.style.transform = 'translateX(0)';
+        }
+    } catch(e) { console.error(e); }
+}
 
+async function loadQuizWeekStatus() {
+    try {
+        const r = await fetch('/quiz-week-status');
+        const data = await r.json();
+        const toggle = document.getElementById('quizWeekToggle');
+        toggle.checked = data.quiz_week_active;
+        toggleQuizWeek(data.quiz_week_active);
+    } catch(e) { console.error(e); }
+}
     loadMenuStatus();
     checkPendingFeedback();
+    loadQuizWeekStatus();
+
 </script>
 </body>
 </html>
