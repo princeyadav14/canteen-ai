@@ -125,20 +125,20 @@ def get_weather():
         current = forecasts[0] if forecasts else None
         
         if current:
-            if current["condition"] == "Rain" or current["rain_probability"] > 60:
-                impact = "NEGATIVE — heavy rain expected, students will avoid going out, canteen footfall will DROP significantly"
-            elif current["condition"] == "Thunderstorm":
-                impact = "VERY NEGATIVE — thunderstorm, students will stay indoors, canteen footfall will DROP sharply"
-            elif current["temp"] > 40:
-                impact = "NEGATIVE — extreme heat above 40 degrees, students avoid going out in day, cold drinks demand HIGH, late night footfall may increase"
-            elif current["temp"] > 35:
-                impact = "SLIGHTLY NEGATIVE during day — hot weather, students prefer staying in AC rooms, cold drinks and ice cream demand HIGH"
+            if current["condition"] == "Thunderstorm":
+                impact = "SUDDEN STORM — unexpected weather change. Chai, Maggi and hot snack demand will spike suddenly. Stock up on hot snacks."
+            elif current["condition"] == "Rain" or current["rain_probability"] > 60:
+                impact = "RAIN — chai and hot snack demand HIGH. Cold drinks demand LOW. Samosa and Maggi will sell faster than usual."
+            elif current["temp"] > 42:
+                impact = "EXTREME HEAT — cold drinks and ice cream demand VERY HIGH in evening and late night. Stock cold drinks well in advance."
+            elif current["temp"] > 38:
+                impact = "HOT WEATHER — cold drinks and ice cream demand HIGH. Evening snack rush will be driven by thirst more than hunger."
             elif current["temp"] < 15:
-                impact = "POSITIVE — cold weather, students want hot food, chai and Maggi demand HIGH"
-            elif current["condition"] in ["Clear", "Clouds"] and current["temp"] < 35:
-                impact = "NEUTRAL — pleasant weather, normal footfall expected"
+                impact = "COLD WEATHER — chai and hot snacks demand HIGH. Students will want warm food during late night."
+            elif current["condition"] in ["Clear", "Clouds"] and 25 <= current["temp"] <= 38:
+                impact = "PLEASANT WEATHER — standard snack demand. No weather-driven spike expected."
             else:
-                impact = "NEUTRAL — normal weather conditions"
+                impact = "NORMAL CONDITIONS — standard snack demand pattern."
                 
             return {
                 "current": current,
