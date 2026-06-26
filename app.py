@@ -163,8 +163,42 @@ def get_mess_menu():
         print(f"Menu fetch error: {e}")
         return MESS_MENU, "hardcoded default"
 
+def assess_dinner_quality(dinner_main, dinner_extra):
+    main_lower = dinner_main.lower()
+    extra_lower = dinner_extra.lower() if dinner_extra else ""
+    
+    paneer_keywords = ["paneer", "kadhai paneer", "shahi paneer", 
+                       "paneer tikka", "paneer korma", "paneer butter",
+                       "paneer do pyaza", "paneer khurchan", "paneer lababdar"]
+    
+    chicken_keywords = ["murgh", "roasted chicken", "butter chicken",
+                        "chicken biryani", "chicken changezi", 
+                        "chicken malai", "chicken korma"]
+    
+    good_extra_keywords = ["fish finger", "roasted chicken", "butter chicken",
+                           "chicken biryani", "chicken changezi", "chicken malai",
+                           "chicken korma", "malai tikka", "chaat", "aloo chaat",
+                           "samosa chaat"]
+    
+    has_paneer_main = any(k in main_lower for k in paneer_keywords)
+    has_chicken_main = any(k in main_lower for k in chicken_keywords)
+    
+    if has_paneer_main or has_chicken_main:
+        return "GOOD"
+    
+    has_good_extra = any(k in extra_lower for k in good_extra_keywords)
+    if has_good_extra:
+        return "DECENT"
+    
+    return "BAD"
+
 def save_mess_menu(menu_dict):
     try:
+        for day in menu_dict:
+            dinner_main = menu_dict[day].get("dinner", "")
+            dinner_extra = menu_dict[day].get("dinner_extra", "")
+            menu_dict[day]["dinner_quality"] = assess_dinner_quality(dinner_main, dinner_extra)
+        
         doc_ref = db.collection("canteen").document("mess_menu")
         previous = doc_ref.get()
         if previous.exists:
@@ -184,25 +218,83 @@ def extract_menu_from_image(image_bytes, mime_type="image/jpeg"):
         image_b64 = base64.b64encode(image_bytes).decode("utf-8")
         
         prompt = """You are reading a mess menu from IIT Kanpur Hall 12.
-Extract the menu for each day of the week.
+
+The menu table has these columns in this exact order:
+Day | Breakfast (IGNORE) | Lunch | Extra Lunch | Dinner | Extra Dinner
+
+Rules:
+- Main columns (Lunch, Dinner) contain regular included mess items
+- Extra columns (Extra Lunch, Extra Dinner) contain paid special items
+- Breakfast column must be completely ignored
+- Never mix main and extra items together
+- Read colored text columns as extra items
+
 Return ONLY a valid JSON object in this exact format, nothing else:
+
 {
-  "Monday": {"lunch": "item1, item2", "dinner": "item1, item2", "dinner_quality": "BAD"},
-  "Tuesday": {"lunch": "item1, item2", "dinner": "item1, item2", "dinner_quality": "DECENT"},
-  "Wednesday": {"lunch": "item1, item2", "dinner": "item1, item2", "dinner_quality": "DECENT"},
-  "Thursday": {"lunch": "item1, item2", "dinner": "item1, item2", "dinner_quality": "BAD"},
-  "Friday": {"lunch": "item1, item2", "dinner": "item1, item2", "dinner_quality": "GOOD"},
-  "Saturday": {"lunch": "item1, item2", "dinner": "item1, item2", "dinner_quality": "BAD"},
-  "Sunday": {"lunch": "item1, item2", "dinner": "item1, item2", "dinner_quality": "GOOD"}
+  "Monday": {
+    "lunch": "main lunch items only",
+    "lunch_extra": "paid extra lunch items only",
+    "dinner": "main dinner items only",
+    "dinner_extra": "paid extra dinner items only",
+    "dinner_quality": "BAD or DECENT or GOOD"
+  },
+  "Tuesday": {
+    "lunch": "main lunch items only",
+    "lunch_extra": "paid extra lunch items only",
+    "dinner": "main dinner items only",
+    "dinner_extra": "paid extra dinner items only",
+    "dinner_quality": "BAD or DECENT or GOOD"
+  },
+  "Wednesday": {
+    "lunch": "main lunch items only",
+    "lunch_extra": "paid extra lunch items only",
+    "dinner": "main dinner items only",
+    "dinner_extra": "paid extra dinner items only",
+    "dinner_quality": "BAD or DECENT or GOOD"
+  },
+  "Thursday": {
+    "lunch": "main lunch items only",
+    "lunch_extra": "paid extra lunch items only",
+    "dinner": "main dinner items only",
+    "dinner_extra": "paid extra dinner items only",
+    "dinner_quality": "BAD or DECENT or GOOD"
+  },
+  "Friday": {
+    "lunch": "main lunch items only",
+    "lunch_extra": "paid extra lunch items only",
+    "dinner": "main dinner items only",
+    "dinner_extra": "paid extra dinner items only",
+    "dinner_quality": "BAD or DECENT or GOOD"
+  },
+  "Saturday": {
+    "lunch": "main lunch items only",
+    "lunch_extra": "paid extra lunch items only",
+    "dinner": "main dinner items only",
+    "dinner_extra": "paid extra dinner items only",
+    "dinner_quality": "BAD or DECENT or GOOD"
+  },
+  "Sunday": {
+    "lunch": "main lunch items only",
+    "lunch_extra": "paid extra lunch items only",
+    "dinner": "main dinner items only",
+    "dinner_extra": "paid extra dinner items only",
+    "dinner_quality": "BAD or DECENT or GOOD"
+  }
 }
 
-For dinner_quality use these rules:
-- BAD: simple dal, basic sabzi, no special items
-- DECENT: some variety, one special item
-- GOOD: biryani, special items, dessert, multiple non-veg options
+For dinner_quality — follow these rules STRICTLY:
 
-Extract exactly what you see. If a day is missing, use empty strings.
-Return only the JSON, no explanation."""
+STEP 1: Look at MAIN dinner items only. Does it contain paneer (any dish) or chicken (any dish)?
+- YES → dinner_quality = "GOOD". Stop here. Do not look at extra.
+- NO → go to STEP 2.
+
+STEP 2: Look at extra dinner items. Does it contain fish finger, chicken dish, or chaat/fast food snacks?
+- YES → dinner_quality = "DECENT"
+- NO → dinner_quality = "BAD"
+
+IMPORTANT: Extra items containing paneer or chicken do NOT make quality GOOD. Only main items can make quality GOOD.
+Return only the JSON. No markdown, no explanation, nothing else."""
 
         response = groq_client.chat.completions.create(
     model="meta-llama/llama-4-scout-17b-16e-instruct",
