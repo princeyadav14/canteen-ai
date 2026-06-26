@@ -377,7 +377,9 @@ def analyze_patterns(feedback_data):
     day_scores = {}
     for entry in recent:
         day = entry.get("day")
-        score = entry.get("score", 3)
+        score = entry.get("score")
+        if score is None:
+            continue
         if day not in day_scores:
             day_scores[day] = []
         day_scores[day].append(score)
@@ -468,9 +470,33 @@ def get_full_context(realtime_instruction=None):
     else:
         meal_period = "late night — main canteen rush period"
 
-    is_bad_dinner_day = day_name in MESS_KNOWLEDGE["bad_dinner_days"]
-    weather_data = get_weather()
+    current_menu, menu_source = get_mess_menu()
+    mess_today = current_menu.get(day_name, {})
+    dinner_quality = mess_today.get("dinner_quality", "DECENT")
+    dinner_main = mess_today.get("dinner", "")
+    dinner_extra = mess_today.get("dinner_extra", "")
+    lunch_extra = mess_today.get("lunch_extra", "")
+    
+    is_bad_dinner_day = dinner_quality == "BAD"
+    is_decent_dinner_day = dinner_quality == "DECENT"
+    is_good_dinner_day = dinner_quality == "GOOD"
 
+    if is_good_dinner_day:
+        dinner_quality_desc = "students will prefer mess, canteen dinner footfall will be LOW"
+    elif is_decent_dinner_day:
+        dinner_quality_desc = "mixed — some students go to extra counter, canteen dinner footfall MEDIUM"
+    else:
+        dinner_quality_desc = "students likely to consider canteen for dinner, footfall will be HIGH"
+
+    if day_name in ['Saturday', 'Sunday']:
+        day_lunch_desc = "Weekend — lunch canteen footfall possible if mess lunch is not good"
+    else:
+        day_lunch_desc = "Weekday — lunch canteen footfall LOW regardless of menu"
+
+    weather_data = get_weather()
+    print(f"Weather data: {weather_data}")
+
+    print("Building context...")
     context = f"""
 You are an AI assistant for Anoop, owner of Hall 12 Canteen at IIT Kanpur.
 Your job is to give him a daily demand prediction in Hindi/Hinglish like a helpful friend.
@@ -490,8 +516,11 @@ Today's academic event: {academic_event.get('event', 'Regular day')} ({academic_
 
 === TODAY'S MESS MENU ===
 Mess lunch (12:30-2:30pm): {mess_today.get('lunch', 'Unknown')}
-Mess dinner (7:30-9:30pm): {mess_today.get('dinner', 'Unknown')}
-Mess dinner quality: {mess_today.get('dinner_quality', 'DECENT')}
+Mess lunch extra (paid): {lunch_extra or 'None'}
+Mess dinner (7:30-9:30pm): {dinner_main or 'Unknown'}
+Mess dinner extra (paid): {dinner_extra or 'None'}
+Mess dinner quality: {dinner_quality}
+Dinner quality reasoning: {'GOOD — main dinner has paneer/chicken, students prefer mess' if is_good_dinner_day else 'DECENT — main dinner basic but extra has quality items' if is_decent_dinner_day else 'BAD — main dinner basic, extra also not exciting, students may prefer canteen'}
 
 === WEATHER CONDITIONS IN KANPUR TODAY ===
 {f'''
@@ -503,14 +532,34 @@ Wind speed: {weather_data["current"]["wind_speed"]} m/s
 Weather impact on footfall: {weather_data["impact"]}
 
 Upcoming forecast:
-{chr(10).join([f'  {f["time"]}: {f["temp"]}°C, {f["condition"]}, Rain: {f["rain_probability"]}%' for f in weather_data["forecasts"][1:]])}
+{chr(10).join([f'  {f["time"]}: {f.get("temp","?")}°C, {f.get("condition","?")}, Rain: {f.get("rain_probability","?")}%' for f in weather_data["forecasts"][1:]])}
 ''' if weather_data else "Weather data unavailable — proceed without weather context"}
 
-=== BEHAVIORAL PATTERNS (3 years of observation) ===
-Bad mess dinner days — high canteen footfall: Monday, Thursday, Saturday
-Today is a bad mess dinner day: {is_bad_dinner_day}
-Lunch footfall: Only significant when mess is completely closed
-Late night 10pm-2am: Always busy regardless of mess quality
+=== BEHAVIORAL PATTERNS (validated through observation and merchant conversations) ===
+Dinner footfall logic:
+- GOOD mess dinner (paneer/chicken in main): Students strongly prefer mess. Canteen dinner footfall LOW. Late night still busy.
+- DECENT mess dinner (good items only in extra): Some students stay in mess for extra. Canteen dinner footfall MEDIUM.
+- BAD mess dinner (nothing exciting in main or extra): Students consider canteen for dinner. Canteen dinner footfall HIGH.
+
+Today's dinner quality: {dinner_quality} — {dinner_quality_desc}
+
+Lunch footfall logic:
+- Weekday lunch: Students have classes, they eat in mess regardless of menu. Canteen lunch footfall LOW.
+- Saturday/Sunday/Holiday lunch: Students have freedom. If lunch menu is bad, some may come to canteen.
+- Today is {day_name}: {day_lunch_desc}
+
+Late night 10pm-2am: Always busy regardless of mess quality. This is the most reliable rush period.
+
+Two meals effect: On weekends/holidays, if students came to canteen for lunch, only 2-3 out of 10 will come again for dinner. Midnight snacking is separate and not affected.
+
+Weather effect on snacks (NOT on meal decisions — both mess and canteen are inside hostel):
+- Extreme heat (above 40C): Cold drinks and ice cream demand HIGH in evening
+- Sudden rain: Chai and hot snack demand spikes unexpectedly  
+- Normal weather: Standard evening snack pattern
+
+Exam/quiz season effect on midnight rush:
+- During mid-sem/end-sem exam weeks: Midnight rush significantly higher than normal
+- Quiz weeks (manually flagged): Moderate increase in midnight rush
 
 === MOST POPULAR ITEMS ===
 Snacks: {', '.join(POPULAR_ITEMS['snacks'])}
@@ -543,6 +592,7 @@ Keep under 100 words. Warm and conversational. Start with "Bhai,".
 Do NOT use any markdown formatting. Plain text only.
 Only output the message. Nothing else.
 """
+
     return context
 
 @app.route("/")
@@ -679,8 +729,8 @@ Only output the message. Nothing else.
             "date": today.strftime("%d %B %Y"),
             "day": today.strftime("%A"),
             "time": today.strftime("%I:%M %p"),
-            "mess_quality": MESS_MENU.get(today.strftime("%A"), {}).get("dinner_quality", "DECENT"),
-            "is_bad_mess_day": today.strftime("%A") in MESS_KNOWLEDGE["bad_dinner_days"],
+            "mess_quality": structured.get("mess_factor", "NONE"),
+            "is_bad_mess_day": structured.get("mess_factor") == "HIGH",
             "pattern_alert": pattern_alerts[0] if pattern_alerts else None,
             "weather": weather_data["current"] if weather_data else None,
             "weather_impact": weather_data["impact"] if weather_data else None
@@ -898,4 +948,4 @@ def accuracy():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
