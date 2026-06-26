@@ -593,7 +593,10 @@ Do NOT use any markdown formatting. Plain text only.
 Only output the message. Nothing else.
 """
 
-    return context
+    return context, {
+        "dinner_quality": dinner_quality,
+        "is_bad_dinner_day": is_bad_dinner_day
+    }
 
 @app.route("/")
 def home():
@@ -608,7 +611,9 @@ def predict():
             realtime_instruction = data.get("instruction")
 
         log_usage(request)
-        context = get_full_context(realtime_instruction)
+        context, menu_meta = get_full_context(realtime_instruction)
+        dinner_quality = menu_meta["dinner_quality"]
+        is_bad_dinner_day = menu_meta["is_bad_dinner_day"]
 
         reasoning_prompt = context + """
 === YOUR TASK — CALL 1: STRUCTURED REASONING ===
@@ -729,8 +734,8 @@ Only output the message. Nothing else.
             "date": today.strftime("%d %B %Y"),
             "day": today.strftime("%A"),
             "time": today.strftime("%I:%M %p"),
-            "mess_quality": structured.get("mess_factor", "NONE"),
-            "is_bad_mess_day": structured.get("mess_factor") == "HIGH",
+            "mess_quality": dinner_quality,
+            "is_bad_mess_day": is_bad_dinner_day,
             "pattern_alert": pattern_alerts[0] if pattern_alerts else None,
             "weather": weather_data["current"] if weather_data else None,
             "weather_impact": weather_data["impact"] if weather_data else None

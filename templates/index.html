@@ -1002,19 +1002,20 @@
                     }
                 }
 
+                const messQuality = data.mess_quality;
                 const messCard = document.getElementById('messCard');
-                if (data.is_bad_mess_day) {
+                if (messQuality === 'BAD') {
                     messCard.className = 'status-card mess-bad';
                     document.getElementById('messTitle').textContent = '⚠ Bad mess dinner';
-                    document.getElementById('messSubtitle').textContent = 'Higher canteen footfall likely';
-                } else if (data.mess_quality === 'GOOD') {
+                    document.getElementById('messSubtitle').textContent = 'Students likely to prefer canteen';
+                } else if (messQuality === 'GOOD') {
                     messCard.className = 'status-card mess-good';
                     document.getElementById('messTitle').textContent = '✓ Good mess dinner';
-                    document.getElementById('messSubtitle').textContent = 'Lower canteen footfall at dinner';
+                    document.getElementById('messSubtitle').textContent = 'Students will prefer mess tonight';
                 } else {
                     messCard.className = 'status-card mess-decent';
-                    document.getElementById('messTitle').textContent = '~ Average mess dinner';
-                    document.getElementById('messSubtitle').textContent = 'Normal footfall expected';
+                    document.getElementById('messTitle').textContent = '~ Decent mess dinner';
+                    document.getElementById('messSubtitle').textContent = 'Mixed — some may prefer canteen';
                 }
 
                 const s = data.structured;
