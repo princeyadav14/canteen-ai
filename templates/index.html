@@ -587,6 +587,12 @@
             color: var(--text3);
         }
 
+        .num-emoji {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
         #imageInput { display: none; }
         #menuFileInput { display: none; }
     </style>
@@ -712,7 +718,7 @@
 
     </div>
 
-    <!-- PENDING FEEDBACK CARD -->
+<!-- PENDING FEEDBACK CARD -->
 <div id="pendingFeedbackCard" style="display:none;background:#fffbeb;
     border:1px solid #fcd34d;border-radius:14px;padding:16px;margin-bottom:4px;">
     <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px;">
@@ -721,32 +727,48 @@
     <div style="font-size:12px;color:#78350f;margin-bottom:12px;" id="pendingDateText">
         Rate karo pehle, phir aaj ki prediction milegi
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;" id="pendingScaleRow">
-        <button class="number-btn" onclick="selectPendingScore(1)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
-            1
+    <div style="display:flex;gap:6px;margin-bottom:10px;" id="pendingScaleRow">
+        <button onclick="selectPendingScore(1)" style="flex:1;background:white;border:2px solid #fcd34d;border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;">
+            <span style="font-size:18px;display:block;">😕</span>
+            <span style="font-size:9px;color:#92400e;font-weight:500;display:block;margin-top:3px;">Bahut kam</span>
         </button>
-        <button class="number-btn" onclick="selectPendingScore(2)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
-            2
+        <button onclick="selectPendingScore(2)" style="flex:1;background:white;border:2px solid #fcd34d;border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;">
+            <span style="font-size:18px;display:block;">🙁</span>
+            <span style="font-size:9px;color:#92400e;font-weight:500;display:block;margin-top:3px;">Kam</span>
         </button>
-        <button class="number-btn" onclick="selectPendingScore(3)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
-            3
+        <button onclick="selectPendingScore(3)" style="flex:1;background:white;border:2px solid #fcd34d;border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;">
+            <span style="font-size:18px;display:block;">🙂</span>
+            <span style="font-size:9px;color:#92400e;font-weight:500;display:block;margin-top:3px;">Theek</span>
         </button>
-        <button class="number-btn" onclick="selectPendingScore(4)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
-            4
+        <button onclick="selectPendingScore(4)" style="flex:1;background:white;border:2px solid #fcd34d;border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;">
+            <span style="font-size:18px;display:block;">👍</span>
+            <span style="font-size:9px;color:#92400e;font-weight:500;display:block;margin-top:3px;">Sahi</span>
         </button>
-        <button class="number-btn" onclick="selectPendingScore(5)" style="flex:1;aspect-ratio:1;background:white;border:2px solid #fcd34d;border-radius:10px;font-size:16px;font-weight:700;color:#92400e;cursor:pointer;">
-            5
+        <button onclick="selectPendingScore(5)" style="flex:1;background:white;border:2px solid #fcd34d;border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;">
+            <span style="font-size:18px;display:block;">🔥</span>
+            <span style="font-size:9px;color:#92400e;font-weight:500;display:block;margin-top:3px;">Bilkul sahi</span>
         </button>
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;
-        color:#92400e;margin-bottom:10px;padding:0 2px;">
-        <span>Bilkul galat</span>
-        <span>Ekdum sahi</span>
+    <div id="pendingConfirm" style="display:none;background:white;border-radius:8px;
+        padding:10px;margin-bottom:8px;border:1px solid #fcd34d;">
+        <div id="pendingConfirmText" style="font-size:13px;font-weight:600;
+            color:#92400e;margin-bottom:8px;"></div>
+        <textarea style="width:100%;border:1px solid #e2e8f0;border-radius:8px;
+            padding:8px;font-size:12px;resize:none;margin-bottom:8px;font-family:inherit;"
+            rows="2" placeholder="Kuch aur batana ho toh yahan likho... Jaise: 'Maggi zyada biki'"></textarea>
+        <div style="display:flex;gap:8px;">
+            <button onclick="submitPendingFeedback()" style="flex:2;background:#92400e;
+                color:white;border:none;border-radius:8px;padding:9px;font-size:12px;
+                font-weight:600;cursor:pointer;font-family:inherit;">Save karo</button>
+            <button onclick="changePendingScore()" style="flex:1;background:transparent;
+                color:#92400e;border:1px solid #fcd34d;border-radius:8px;padding:9px;
+                font-size:11px;cursor:pointer;font-family:inherit;">Badlo</button>
+        </div>
     </div>
     <button onclick="skipPendingFeedback()" style="width:100%;background:transparent;
         border:1px solid #fcd34d;border-radius:8px;padding:8px;font-size:12px;
         color:#92400e;cursor:pointer;font-family:inherit;">
-        Baad mein dunga ✕
+        Abhi nahi
     </button>
 </div>
 
@@ -866,27 +888,50 @@
         <div class="feedback-title">How accurate was today's prediction?</div>
         <div class="feedback-sub">Your feedback improves tomorrow's prediction</div>
         <div class="number-scale">
-            <button class="number-btn" onclick="selectScore(1)">
-                1<span class="num-label">Wrong</span>
-            </button>
-            <button class="number-btn" onclick="selectScore(2)">
-                2<span class="num-label">Poor</span>
-            </button>
-            <button class="number-btn" onclick="selectScore(3)">
-                3<span class="num-label">OK</span>
-            </button>
-            <button class="number-btn" onclick="selectScore(4)">
-                4<span class="num-label">Good</span>
-            </button>
-            <button class="number-btn" onclick="selectScore(5)">
-                5<span class="num-label">Spot on</span>
-            </button>
-        </div>
+    <button class="number-btn" onclick="selectScore(1)">
+        <span class="num-emoji">😕</span>
+        <span class="num-label">Bahut kam</span>
+    </button>
+    <button class="number-btn" onclick="selectScore(2)">
+        <span class="num-emoji">🙁</span>
+        <span class="num-label">Kam</span>
+    </button>
+    <button class="number-btn" onclick="selectScore(3)">
+        <span class="num-emoji">🙂</span>
+        <span class="num-label">Theek</span>
+    </button>
+    <button class="number-btn" onclick="selectScore(4)">
+        <span class="num-emoji">👍</span>
+        <span class="num-label">Sahi</span>
+    </button>
+    <button class="number-btn" onclick="selectScore(5)">
+        <span class="num-emoji">🔥</span>
+        <span class="num-label">Bilkul sahi</span>
+    </button>
+</div>
         <textarea class="feedback-note" id="feedbackNote" rows="2"
             placeholder="Any additional notes? e.g. More students came after midnight..."></textarea>
-        <button class="submit-btn" onclick="submitFeedback()">
-            Submit Feedback ✓
+        <div id="feedbackConfirm" style="display:none;background:var(--bg3);
+    border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border);">
+    <div id="feedbackConfirmText" style="font-size:13px;font-weight:600;
+        color:var(--text1);margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;">
+        <button onclick="submitFeedback()" style="flex:2;background:var(--green2);
+            color:white;border:none;border-radius:8px;padding:10px;font-size:13px;
+            font-weight:600;cursor:pointer;font-family:inherit;">
+            Save karo ✓
         </button>
+        <button onclick="changeFeedback()" style="flex:1;background:transparent;
+            color:var(--text2);border:1px solid var(--border);border-radius:8px;
+            padding:10px;font-size:12px;cursor:pointer;font-family:inherit;">
+            Badlo
+        </button>
+    </div>
+</div>
+<button class="submit-btn" id="submitFeedbackBtn" style="display:none;"
+    onclick="submitFeedback()">
+    Save karo ✓
+</button>
     </div>
 
     <!-- THANKS -->
@@ -959,12 +1004,25 @@
         }
     }
 
-    function selectScore(score) {
-        selectedScore = score;
-        document.querySelectorAll('.number-btn').forEach((btn, i) => {
-            btn.classList.toggle('selected', i + 1 === score);
-        });
-    }
+    const feedbackLabels = ['','Bahut kam','Kam','Theek','Sahi','Bilkul sahi'];
+const feedbackEmojis = ['','😕','🙁','🙂','👍','🔥'];
+
+function selectScore(score) {
+    selectedScore = score;
+    document.querySelectorAll('.number-btn').forEach((btn, i) => {
+        btn.classList.toggle('selected', i + 1 === score);
+    });
+    const confirmEl = document.getElementById('feedbackConfirm');
+    const confirmText = document.getElementById('feedbackConfirmText');
+    confirmText.textContent = 'Aapne "' + feedbackLabels[score] + '" select kiya ' + feedbackEmojis[score];
+    confirmEl.style.display = 'block';
+}
+
+function changeFeedback() {
+    document.getElementById('feedbackConfirm').style.display = 'none';
+    document.querySelectorAll('.number-btn').forEach(b => b.classList.remove('selected'));
+    selectedScore = null;
+}
 
     function detectLevel(text) {
         const t = text.toUpperCase();
@@ -1105,7 +1163,7 @@
 
                 document.getElementById('predictionText').textContent = data.prediction;
                 predCard.style.display = 'block';
-                feedCard.style.display = 'block';
+                feedCard.style.display = 'none';
 
                 if (data.pattern_alert) {
                     currentAlert = data.pattern_alert;
@@ -1315,14 +1373,29 @@ async function checkPendingFeedback() {
     }
 }
 
+const pendingLabels = ['','Bahut kam','Kam','Theek','Sahi','Bilkul sahi'];
+const pendingEmojis = ['','😕','🙁','🙂','👍','🔥'];
+
 function selectPendingScore(score) {
     pendingScore = score;
     const btns = document.getElementById('pendingScaleRow').querySelectorAll('button');
     btns.forEach((btn, i) => {
         btn.style.background = i + 1 === score ? '#92400e' : 'white';
-        btn.style.color = i + 1 === score ? 'white' : '#92400e';
+        btn.querySelector('span:last-child').style.color = i + 1 === score ? '#fef3c7' : '#92400e';
     });
-    setTimeout(() => submitPendingFeedback(), 500);
+    document.getElementById('pendingConfirmText').textContent = 
+        'Aapne "' + pendingLabels[score] + '" select kiya ' + pendingEmojis[score];
+    document.getElementById('pendingConfirm').style.display = 'block';
+}
+
+function changePendingScore() {
+    document.getElementById('pendingConfirm').style.display = 'none';
+    const btns = document.getElementById('pendingScaleRow').querySelectorAll('button');
+    btns.forEach(btn => {
+        btn.style.background = 'white';
+        btn.querySelector('span:last-child').style.color = '#92400e';
+    });
+    pendingScore = null;
 }
 
 async function submitPendingFeedback() {

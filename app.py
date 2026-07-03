@@ -2,7 +2,11 @@ from dotenv import load_dotenv
 load_dotenv()
 from flask import Flask, render_template, jsonify, request
 from groq import Groq
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+def now_ist():
+    IST = timezone(timedelta(hours=5, minutes=30))
+    return datetime.now(IST).replace(tzinfo=None)
 import json
 import os
 import requests
@@ -205,7 +209,7 @@ def save_mess_menu(menu_dict):
             db.collection("canteen").document("mess_menu_backup").set(previous.to_dict())
         doc_ref.set({
             "menu": menu_dict,
-            "uploaded_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+            "uploaded_at": now_ist().strftime("%Y-%m-%d %H:%M")
         })
         return True
     except Exception as e:
@@ -406,7 +410,7 @@ def log_usage(request):
         user_agent = request.headers.get('User-Agent', 'unknown')
         ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
         
-        today = datetime.now()
+        today = now_ist()
         
         device = "unknown"
         if 'android' in user_agent.lower():
@@ -436,7 +440,7 @@ def log_usage(request):
         print(f"Usage log error: {e}")
 
 def get_full_context(realtime_instruction=None):
-    today = datetime.now()
+    today = now_ist()
     date_str = today.strftime("%Y-%m-%d")
     day_name = today.strftime("%A")
     time_now = today.strftime("%H:%M")
@@ -713,7 +717,7 @@ Only output the message. Nothing else.
 
         hindi_message = hindi_response.choices[0].message.content.strip()
         weather_data = get_weather()
-        today = datetime.now()
+        today = now_ist()
         feedback_data = load_feedback()
         pattern_alerts = analyze_patterns(feedback_data)
 
@@ -758,7 +762,7 @@ def feedback():
         score = data.get("score")
         predicted_level = data.get("predicted_level")
         note = data.get("note", "")
-        today = datetime.now()
+        today = now_ist()
 
         feedback_data = load_feedback()
         entry = {
@@ -899,22 +903,21 @@ def pending_feedback():
         feedback_data = load_feedback()
         history = feedback_data.get("history", [])
         
-        today = datetime.now().strftime("%Y-%m-%d")
-        yesterday = (datetime.now() - __import__('datetime').timedelta(days=1)).strftime("%Y-%m-%d")
+        today = now_ist().strftime("%Y-%m-%d")
+        
+        from datetime import timedelta
+        yesterday = (now_ist() - timedelta(days=1)).strftime("%Y-%m-%d")
         
         pending = None
         for entry in reversed(history):
             if entry.get("date") == yesterday and not entry.get("score"):
                 pending = entry
                 break
-            if entry.get("date") == today and not entry.get("score"):
-                pending = entry
-                break
-                
+       
         return jsonify({"pending": pending})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 @app.route("/accuracy", methods=["GET"])
 def accuracy():
     try:
