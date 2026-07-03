@@ -999,8 +999,12 @@
         const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         document.getElementById('dayText').textContent = days[now.getDay()];
-        document.getElementById('dateText').textContent = 
-            now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+        const day = now.getDate();
+const suffix = day === 1 || day === 21 || day === 31 ? 'st' :
+               day === 2 || day === 22 ? 'nd' :
+               day === 3 || day === 23 ? 'rd' : 'th';
+document.getElementById('dateText').textContent = 
+    day + suffix + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
         let h = now.getHours(), m = now.getMinutes();
         let ampm = h >= 12 ? 'PM' : 'AM';
         h = h % 12 || 12;
