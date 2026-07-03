@@ -96,63 +96,144 @@ SEMESTER_PHASE = "Summer Term 2026 — fewer students on campus, mostly PG and r
 
 def get_weather():
     try:
-        api_key = os.environ.get("OPENWEATHER_API_KEY")
-        url = f"http://api.openweathermap.org/data/2.5/forecast?q=Kanpur,IN&appid={api_key}&units=metric&cnt=8"
+        api_key = os.environ.get("TOMORROW_API_KEY")
+        url = f"https://api.tomorrow.io/v4/weather/forecast?location=26.5123,80.2329&apikey={api_key}&units=metric"
         response = requests.get(url, timeout=5)
         data = response.json()
-        
-        if data.get("cod") != "200":
+
+        if "timelines" not in data:
             return None
-            
+
+        hourly = data["timelines"]["hourly"]
+        
         forecasts = []
-        for item in data["list"][:4]:
-            time = datetime.fromtimestamp(item["dt"])
-            temp = item["main"]["temp"]
-            feels_like = item["main"]["feels_like"]
-            humidity = item["main"]["humidity"]
-            weather_main = item["weather"][0]["main"]
-            weather_desc = item["weather"][0]["description"]
-            rain_prob = item.get("pop", 0) * 100
-            wind_speed = item["wind"]["speed"]
+        for item in hourly[:4]:
+            time = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
+            time_ist = time + timedelta(hours=5, minutes=30)
+            values = item["values"]
+            
+            temp = round(values.get("temperature", 0))
+            feels_like = round(values.get("temperatureApparent", temp))
+            humidity = round(values.get("humidity", 0))
+            rain_prob = round(values.get("precipitationProbability", 0))
+            wind_speed = round(values.get("windSpeed", 0))
+            weather_code = values.get("weatherCode", 1000)
+            
+            condition_map = {
+                1000: "Clear", 1100: "Clear", 1101: "Clouds",
+                1102: "Clouds", 1001: "Clouds", 2000: "Fog",
+                2100: "Fog", 4000: "Drizzle", 4001: "Rain",
+                4200: "Rain", 4201: "Rain", 5000: "Snow",
+                5001: "Snow", 5100: "Snow", 5101: "Snow",
+                6000: "Drizzle", 6001: "Rain", 6200: "Rain",
+                6201: "Rain", 7000: "Thunderstorm", 7101: "Thunderstorm",
+                7102: "Thunderstorm", 8000: "Thunderstorm"
+            }
+            condition = condition_map.get(weather_code, "Clouds")
             
             forecasts.append({
-                "time": time.strftime("%I:%M %p"),
-                "temp": round(temp),
-                "feels_like": round(feels_like),
+                "time": time_ist.strftime("%I:%M %p"),
+                "temp": temp,
+                "feels_like": feels_like,
                 "humidity": humidity,
-                "condition": weather_main,
-                "description": weather_desc,
-                "rain_probability": round(rain_prob),
-                "wind_speed": round(wind_speed)
+                "condition": condition,
+                "description": condition.lower(),
+                "rain_probability": rain_prob,
+                "wind_speed": wind_speed
             })
-        
+
         current = forecasts[0] if forecasts else None
-        
+
         if current:
             if current["condition"] == "Thunderstorm":
-                impact = "SUDDEN STORM — unexpected weather change. Chai, Maggi and hot snack demand will spike suddenly. Stock up on hot snacks."
-            elif current["condition"] == "Rain" or current["rain_probability"] > 60:
-                impact = "RAIN — chai and hot snack demand HIGH. Cold drinks demand LOW. Samosa and Maggi will sell faster than usual."
+                impact = "SUDDEN STORM — chai, Maggi aur hot snacks ki demand spike hogi. Extra stock rakhna."
+            elif current["condition"] in ["Rain", "Drizzle"] or current["rain_probability"] > 40:
+                impact = "RAIN/DRIZZLE — chai aur hot snack demand HIGH. Samosa aur Maggi jaldi bikengi. Cold drinks demand kam hogi."
             elif current["temp"] > 42:
-                impact = "EXTREME HEAT — cold drinks and ice cream demand VERY HIGH in evening and late night. Stock cold drinks well in advance."
+                impact = "EXTREME HEAT — cold drinks aur ice cream demand VERY HIGH shaam ko aur raat ko."
             elif current["temp"] > 38:
-                impact = "HOT WEATHER — cold drinks and ice cream demand HIGH. Evening snack rush will be driven by thirst more than hunger."
+                impact = "HOT WEATHER — cold drinks aur ice cream demand HIGH. Thirst-driven snack rush expected."
             elif current["temp"] < 15:
-                impact = "COLD WEATHER — chai and hot snacks demand HIGH. Students will want warm food during late night."
-            elif current["condition"] in ["Clear", "Clouds"] and 25 <= current["temp"] <= 38:
-                impact = "PLEASANT WEATHER — standard snack demand. No weather-driven spike expected."
+                impact = "COLD WEATHER — chai aur hot snacks demand HIGH. Late night mein warm food zyada bikegi."
             else:
-                impact = "NORMAL CONDITIONS — standard snack demand pattern."
-                
+                impact = "PLEASANT WEATHER — standard snack demand. No weather-driven spike expected."
+
             return {
                 "current": current,
                 "forecasts": forecasts,
                 "impact": impact
             }
         return None
-        
+
     except Exception as e:
         print(f"Weather fetch error: {e}")
+        return None
+
+def get_weather_change_alert(current_weather):
+    try:
+        if not current_weather:
+            return None
+
+        weather_ref = db.collection("canteen").document("weather_history")
+        weather_doc = weather_ref.get()
+
+        yesterday_weather = None
+        if weather_doc.exists:
+            history = weather_doc.to_dict()
+            yesterday_weather = history.get("yesterday")
+
+        today_str = now_ist().strftime("%Y-%m-%d")
+        
+        if not yesterday_weather or yesterday_weather.get("date") == today_str:
+            db.collection("canteen").document("weather_history").set({
+                "yesterday": {
+                    "temp": current_weather["temp"],
+                    "condition": current_weather["condition"],
+                    "rain_probability": current_weather["rain_probability"],
+                    "date": today_str
+                }
+            })
+            return None
+
+        prev_temp = yesterday_weather.get("temp", current_weather["temp"])
+        prev_condition = yesterday_weather.get("condition", "Clear")
+        prev_rain = yesterday_weather.get("rain_probability", 0)
+
+        curr_temp = current_weather["temp"]
+        curr_condition = current_weather["condition"]
+        curr_rain = current_weather["rain_probability"]
+
+        alert = None
+
+        if curr_rain > 60 and prev_rain < 20:
+            alert = {
+                "type": "SUDDEN_RAIN",
+                "message": "Achanak barish aa rahi hai — chai aur hot snacks ki demand suddenly badh sakti hai. Samosa aur Maggi extra rakhna."
+            }
+        elif curr_condition == "Thunderstorm" and prev_condition not in ["Thunderstorm", "Rain"]:
+            alert = {
+                "type": "STORM",
+                "message": "Achanak toofan — students bahar nahi niklenge. Late night canteen rush drop ho sakta hai."
+            }
+        elif curr_temp > prev_temp + 4 and curr_temp > 40:
+            alert = {
+                "type": "HEAT_SPIKE",
+                "message": f"Temperature achanak {curr_temp}°C — kal se kaafi zyada garmi. Cold drinks aur ice cream ka stock check karo shaam se pehle."
+            }
+
+        db.collection("canteen").document("weather_history").set({
+            "yesterday": {
+                "temp": curr_temp,
+                "condition": curr_condition,
+                "rain_probability": curr_rain,
+                "date": today_str
+            }
+        })
+
+        return alert
+
+    except Exception as e:
+        print(f"Weather alert error: {e}")
         return None
 
 def get_mess_menu():
@@ -503,6 +584,7 @@ def get_full_context(realtime_instruction=None):
         day_lunch_desc = "Weekday — lunch canteen footfall LOW regardless of menu"
 
     weather_data = get_weather()
+    weather_alert = get_weather_change_alert(weather_data["current"]) if weather_data else None
     print(f"Weather data: {weather_data}")
 
     print("Building context...")
