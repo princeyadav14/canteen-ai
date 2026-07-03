@@ -1257,6 +1257,8 @@ function changeFeedback() {
             const data = await res.json();
             document.getElementById('feedbackCard').style.display = 'none';
             document.getElementById('thanksCard').style.display = 'block';
+            showToast('✓ Feedback save ho gaya');
+
             if (data.pattern_alert && !currentAlert) {
                 currentAlert = data.pattern_alert;
                 document.getElementById('alertMsg').textContent = data.pattern_alert.message;
@@ -1473,6 +1475,7 @@ async function submitPendingFeedback() {
         document.getElementById('pendingFeedbackCard').style.display = 'none';
         pendingEntry = null;
         pendingScore = null;
+        showToast('✓ Feedback save ho gaya — kal ki prediction better hogi');
     } catch(e) { console.error(e); }
 }
 
@@ -1553,6 +1556,14 @@ function toggleWhyToday() {
     body.style.display = isOpen ? 'none' : 'block';
     chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
 }
+
+function showToast(msg) {
+    const t = document.getElementById('toastMsg');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
+}
+
 async function loadQuizWeekStatus() {
     try {
         const r = await fetch('/quiz-week-status');
@@ -1567,5 +1578,11 @@ async function loadQuizWeekStatus() {
     loadQuizWeekStatus();
 
 </script>
+<div id="toastMsg" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+        background:#0f172a;color:#fff;border-radius:10px;padding:12px 20px;
+        font-size:13px;font-weight:500;z-index:999;display:none;
+        box-shadow:0 4px 12px rgba(0,0,0,0.3);white-space:nowrap;">
+    </div>
+
 </body>
 </html>
