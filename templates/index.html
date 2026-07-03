@@ -1136,11 +1136,13 @@ function changeFeedback() {
 
                 const s = data.structured;
                 const level = s ? s.footfall_level : detectLevel(data.prediction);
+                
                 currentPredictedLevel = level;
-
                 const badge = document.getElementById('levelBadge');
-                badge.textContent = level;
+                const levelLabels = {'HIGH': 'HIGH RUSH', 'MEDIUM': 'NORMAL RUSH', 'LOW': 'LOW RUSH'};
+                badge.textContent = levelLabels[level] || level;
                 badge.className = 'level-badge level-' + level.toLowerCase();
+
 
                 if (s) {
                     const confidence = Math.round(s.confidence * 100);
