@@ -858,8 +858,20 @@
     </div>
 
     <!-- Row 2: Signal factors -->
-    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;" id="factorRow">
+    <div style="margin-bottom:14px;">
+    <div onclick="toggleWhyToday()" style="display:flex;align-items:center;
+        justify-content:space-between;cursor:pointer;padding:10px 12px;
+        background:var(--bg3);border-radius:10px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text1);">
+            Aaj demand kyun badhegi?
+        </span>
+        <span id="whyChevron" style="font-size:14px;color:var(--text3);
+            transition:transform 0.2s;">⌄</span>
     </div>
+    <div id="whyBody" style="display:none;padding:8px 4px 0;">
+        <div id="whyItems"></div>
+    </div>
+</div>
 
     <!-- Row 3: Top items -->
     <div style="margin-bottom:14px;">
@@ -1138,25 +1150,50 @@ function changeFeedback() {
                     document.getElementById('busiestSlot').textContent = 
                         s.busiest_slot || '—';
 
-                    const factorRow = document.getElementById('factorRow');
-                    factorRow.innerHTML = '';
-                    const factors = [
-                        {label: 'Weather', value: s.weather_factor},
-                        {label: 'Mess', value: s.mess_factor},
-                        {label: 'Academic', value: s.academic_factor}
-                    ];
-                    const factorColors = {
-                        'HIGH': 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;',
-                        'LOW': 'background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;',
-                        'NONE': 'background:var(--bg3);color:var(--text3);border:1px solid var(--border);'
-                    };
-                    factors.forEach(f => {
-                        const chip = document.createElement('div');
-                        chip.style.cssText = `font-size:10px;font-weight:600;
-                            border-radius:20px;padding:3px 8px;
-                            ${factorColors[f.value] || factorColors['NONE']}`;
-                        chip.textContent = f.label + ': ' + (f.value || 'N/A');
-                        factorRow.appendChild(chip);
+                    const whyItems = document.getElementById('whyItems');
+                    whyItems.innerHTML = '';
+                    
+                    const whyData = [];
+                    
+                    if (s.weather_factor === 'HIGH') {
+                        const wc = data.weather ? data.weather.condition : '';
+                        if (wc === 'Rain' || wc === 'Drizzle') {
+                            whyData.push({emoji:'🌧️', cause:'Barish ho rahi hai', effect:'Chai aur hot snacks ki demand zyada hogi — samosa aur Maggi jaldi bikengi'});
+                        } else if (wc === 'Thunderstorm') {
+                            whyData.push({emoji:'⛈️', cause:'Toofan aa raha hai', effect:'Students bahar nahi niklenge — canteen mein hi rahenge'});
+                        } else {
+                            whyData.push({emoji:'☀️', cause:'Garmi bahut zyada hai', effect:'Cold drinks aur ice cream ki demand shaam ko spike karegi'});
+                        }
+                    } else if (s.weather_factor === 'LOW') {
+                        whyData.push({emoji:'🌤️', cause:'Mausam theek hai', effect:'Weather ki wajah se koi special demand nahi — normal snack pattern'});
+                    }
+                    
+                    if (s.mess_factor === 'HIGH') {
+                        whyData.push({emoji:'🍛', cause:'Mess dinner average hai', effect:'Students canteen se extra order kar sakte hain — dinner rush possible'});
+                    } else if (s.mess_factor === 'LOW') {
+                        whyData.push({emoji:'✅', cause:'Mess dinner accha hai', effect:'Students mess mein hi khayenge — canteen dinner rush kam hogi'});
+                    }
+                    
+                    if (s.academic_factor === 'HIGH') {
+                        whyData.push({emoji:'📚', cause:'Exam ya quiz week hai', effect:'Raat 11 baje ke baad rush zyada hoga — students late night snacking karenge'});
+                    } else if (s.academic_factor === 'MEDIUM') {
+                        whyData.push({emoji:'📖', cause:'Classes chal rahi hain', effect:'Normal academic day — standard late night rush expected'});
+                    }
+                    
+                    if (whyData.length === 0) {
+                        whyData.push({emoji:'📅', cause:'Normal din hai', effect:'Koi special factor nahi — regular rush pattern expected'});
+                    }
+                    
+                    whyData.forEach(item => {
+                        const div = document.createElement('div');
+                        div.style.cssText = 'display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--border);';
+                        div.innerHTML = `
+                            <span style="font-size:18px;flex-shrink:0;">${item.emoji}</span>
+                            <div>
+                                <div style="font-size:12px;font-weight:600;color:var(--text1);">${item.cause}</div>
+                                <div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4;">${item.effect}</div>
+                            </div>`;
+                        whyItems.appendChild(div);
                     });
 
                     const topItems = document.getElementById('topItems');
@@ -1507,7 +1544,13 @@ async function toggleQuizWeek(active) {
         }
     } catch(e) { console.error(e); }
 }
-
+function toggleWhyToday() {
+    const body = document.getElementById('whyBody');
+    const chevron = document.getElementById('whyChevron');
+    const isOpen = body.style.display === 'block';
+    body.style.display = isOpen ? 'none' : 'block';
+    chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
 async function loadQuizWeekStatus() {
     try {
         const r = await fetch('/quiz-week-status');
