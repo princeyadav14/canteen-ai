@@ -1020,25 +1020,26 @@ def accuracy():
                 week_start = date - timedelta(days=date.weekday())
                 week_key = week_start.strftime("%b %d")
                 if week_key not in weeks:
-                    weeks[week_key] = {"total": 0, "accurate": 0, "start_date": entry["date"]}
+                    weeks[week_key] = {"total": 0, "total_score": 0, "start_date": entry["date"]}
                 weeks[week_key]["total"] += 1
-                if entry["score"] >= 4:
-                    weeks[week_key]["accurate"] += 1
+                weeks[week_key]["total_score"] += entry["score"]
             except:
                 continue
         
         week_list = []
         for week_key, data in sorted(weeks.items()):
-            accuracy_pct = round((data["accurate"] / data["total"]) * 100) if data["total"] > 0 else 0
+            avg_score = round(data["total_score"] / data["total"], 1) if data["total"] > 0 else 0
+            accuracy_pct = round((avg_score / 5) * 100) if data["total"] > 0 else 0
             week_list.append({
                 "week": week_key,
                 "total": data["total"],
-                "accurate": data["accurate"],
+                "avg_score": avg_score,
                 "accuracy": accuracy_pct,
                 "start_date": data["start_date"]
             })
         
-        overall = round(sum(w["accurate"] for w in week_list) / sum(w["total"] for w in week_list) * 100) if week_list else 0
+        overall_score = round(sum(w["avg_score"] for w in week_list) / len(week_list), 1) if week_list else 0
+        overall = round((overall_score / 5) * 100) if week_list else 0
         
         return jsonify({"weeks": week_list, "overall": overall})
     except Exception as e:
