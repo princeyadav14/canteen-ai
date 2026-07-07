@@ -1856,41 +1856,106 @@ async function loadAccuracy() {
         const r = await fetch('/accuracy');
         const data = await r.json();
         const card = document.getElementById('accuracyCard');
-        
-        document.getElementById('overallPct').textContent = data.overall + '%';
-        
-        const weeksEl = document.getElementById('accuracyWeeks');
+
         if (!data.weeks || data.weeks.length === 0) {
-            weeksEl.innerHTML = `<div style="text-align:center;font-size:13px;
-                color:var(--text2);padding:10px;">
+            document.getElementById('accuracyWeeks').innerHTML = 
+                `<div style="text-align:center;font-size:13px;
+                color:var(--text2);padding:20px;">
                 No accuracy data yet. Keep using DayCue daily!</div>`;
-        } else {
-            weeksEl.innerHTML = data.weeks.map((w, i) => `
-                <div style="margin-bottom:12px;">
-                    <div style="display:flex;justify-content:space-between;
-                        align-items:center;margin-bottom:6px;">
-                        <span style="font-size:12px;font-weight:600;
-                            color:var(--text1);">Week of ${w.week}</span>
-                        <span style="font-size:13px;font-weight:700;
-                            color:${w.accuracy >= 70 ? '#16a34a' : w.accuracy >= 50 ? '#ca8a04' : '#dc2626'};">
-                            ${w.accuracy}%
-                        </span>
-                    </div>
-                    <div style="background:var(--bg3);border-radius:20px;height:8px;overflow:hidden;">
-                        <div style="height:100%;border-radius:20px;
-                            background:${w.accuracy >= 70 ? '#16a34a' : w.accuracy >= 50 ? '#ca8a04' : '#dc2626'};
-                            width:${w.accuracy}%;transition:width 0.5s;">
-                        </div>
-                    </div>
-                    <div style="font-size:11px;color:var(--text3);margin-top:4px;">
-                        Avg score: ${w.avg_score}/5 across ${w.total} predictions
-                    </div>
-                </div>
-            `).join('');
+            card.style.display = 'block';
+            card.scrollIntoView({behavior:'smooth'});
+            return;
         }
-        
+
+        const weeks = data.weeks.sort((a, b) => new Date('2026 ' + a.week) - new Date('2026 ' + b.week));
+        const overall = data.overall;
+
+        document.getElementById('overallPct').textContent = overall + '%';
+
+        const svgWidth = Math.max(320, weeks.length * 90);        const svgHeight = 160;
+        const padL = 40;
+        const padR = 20;
+        const padT = 20;
+        const padB = 40;
+        const chartW = svgWidth - padL - padR;
+        const chartH = svgHeight - padT - padB;
+
+        const xStep = weeks.length > 1 ? chartW / (weeks.length - 1) : chartW;
+        const points = weeks.map((w, i) => ({
+            x: padL + (weeks.length > 1 ? i * xStep : chartW / 2),
+            y: padT + chartH - (w.accuracy / 100) * chartH,
+            accuracy: w.accuracy,
+            week: w.week,
+            avg: w.avg_score,
+            total: w.total
+        }));
+
+        const pathD = points.map((p, i) => 
+            (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)
+        ).join(' ');
+
+        const areaD = `M ${points[0].x} ${padT + chartH} ` +
+            points.map(p => `L ${p.x} ${p.y}`).join(' ') +
+            ` L ${points[points.length-1].x} ${padT + chartH} Z`;
+
+        const yLabels = [0, 25, 50, 75, 100].map(v => ({
+            y: padT + chartH - (v / 100) * chartH,
+            label: v + '%'
+        }));
+
+        const svg = `
+        <svg width="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" 
+            style="overflow:visible;">
+            
+            ${yLabels.map(l => `
+                <line x1="${padL}" y1="${l.y}" x2="${svgWidth - padR}" y2="${l.y}"
+                    stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+                <text x="${padL - 6}" y="${l.y + 4}" text-anchor="end"
+                    font-size="9" fill="#94a3b8">${l.label}</text>
+            `).join('')}
+
+            <path d="${areaD}" fill="#065f46" opacity="0.08"/>
+
+            <path d="${pathD}" fill="none" stroke="#065f46" 
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+            ${points.map(p => `
+                <circle cx="${p.x}" cy="${p.y}" r="5" 
+                    fill="#F36F21" stroke="white" stroke-width="2"/>
+            `).join('')}
+
+            ${points.map(p => `
+                <text x="${p.x}" y="${padT + chartH + 14}" text-anchor="middle"
+    font-size="9" fill="#94a3b8" transform="rotate(-30, ${p.x}, ${padT + chartH + 14})">${p.week}</text>
+                <text x="${p.x}" y="${p.y - 10}" text-anchor="middle"
+                    font-size="10" fill="#065f46" font-weight="600">${p.accuracy}%</text>
+            `).join('')}
+
+        </svg>`;
+
+        const breakdown = weeks.map(w => `
+            <div style="display:flex;justify-content:space-between;
+                align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+                <span style="font-size:12px;color:var(--text2);">Week of ${w.week}</span>
+                <div style="text-align:right;">
+                    <span style="font-size:13px;font-weight:700;
+                        color:${w.accuracy >= 70 ? '#065f46' : w.accuracy >= 50 ? '#F36F21' : '#dc2626'};">
+                        ${w.accuracy}%
+                    </span>
+                    <span style="font-size:11px;color:var(--text3);margin-left:6px;">
+                        avg ${w.avg_score}/5 · ${w.total} days
+                    </span>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('accuracyWeeks').innerHTML = `
+            <div style="margin-bottom:12px;">${svg}</div>
+            ${breakdown}
+        `;
+
         card.style.display = 'block';
-        card.scrollIntoView({behavior: 'smooth'});
+        card.scrollIntoView({behavior:'smooth'});
     } catch(e) { console.error(e); }
 }
 async function toggleQuizWeek(active) {
