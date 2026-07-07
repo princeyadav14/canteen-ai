@@ -587,7 +587,48 @@
             font-size: 11px;
             color: var(--text3);
         }
-
+        .ops-tab {
+    flex: 1;
+    padding: 12px 4px;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+}
+.ops-tab.active {
+    color: var(--green2);
+    border-bottom: 2px solid var(--green2);
+    font-weight: 600;
+}
+.ops-panel {
+    min-height: calc(100vh - 100px);
+}
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    background: #cbd5e1;
+    border-radius: 24px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--green2); }
+.toggle-knob {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+}
+.toggle-switch.on .toggle-knob { transform: translateX(20px); }
         .num-emoji {
             font-size: 20px;
             display: block;
@@ -631,6 +672,209 @@
 <!-- MAIN -->
 <div class="main">
 
+<!-- OPERATIONS CENTER -->
+<div id="opsCenter" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+    background:var(--bg);z-index:100;overflow-y:auto;max-width:480px;margin:0 auto;">
+    
+    <!-- Ops Header -->
+    <div style="background:var(--green);padding:14px 16px;display:flex;
+        align-items:center;gap:12px;position:sticky;top:0;z-index:10;">
+        <button onclick="closeOps()" style="background:rgba(255,255,255,0.15);
+            border:none;border-radius:8px;padding:6px 10px;color:white;
+            font-size:16px;cursor:pointer;">←</button>
+        <div>
+            <div style="color:white;font-size:16px;font-weight:600;
+                font-family:'Manrope',sans-serif;">Operations Center</div>
+            <div style="color:#6ee7b7;font-size:11px;">DayCue admin controls</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;background:var(--bg2);border-bottom:1px solid var(--border);
+        position:sticky;top:52px;z-index:9;">
+        <button class="ops-tab active" onclick="switchOpsTab('today')" id="tab-today">Today</button>
+        <button class="ops-tab" onclick="switchOpsTab('updates')" id="tab-updates">Updates</button>
+        <button class="ops-tab" onclick="switchOpsTab('menu')" id="tab-menu">Menu</button>
+        <button class="ops-tab" onclick="switchOpsTab('calendar')" id="tab-calendar">Calendar</button>
+    </div>
+
+    <!-- TODAY TAB -->
+    <div id="ops-today" class="ops-panel">
+        <div style="padding:16px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:4px;">
+                Today's operational update
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">
+                Any change that affects today's demand — mess closure, campus event, weather situation.
+            </div>
+            
+            <textarea id="opsOverrideText" style="width:100%;background:var(--bg3);
+                border:1px solid var(--border);border-radius:10px;padding:12px;
+                font-size:13px;font-family:inherit;color:var(--text1);resize:none;
+                margin-bottom:10px;" rows="3"
+                placeholder="e.g. Mess dinner cancelled today, Hall 12 fest at 9pm, Pest control in canteen..."></textarea>
+            
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+                <label style="flex:1;background:var(--bg3);border:1px dashed var(--border);
+                    border-radius:8px;padding:10px;text-align:center;font-size:12px;
+                    color:var(--text2);cursor:pointer;">
+                    📎 Attach notice
+                    <input type="file" id="opsImageInput" accept="image/*" 
+                        style="display:none;" onchange="handleOpsImage(this)">
+                </label>
+                <button onclick="clearOverride()" style="flex:1;background:var(--bg3);
+                    border:1px solid var(--border);border-radius:8px;padding:10px;
+                    font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;">
+                    Clear
+                </button>
+            </div>
+            
+            <div id="opsImagePreview" style="font-size:11px;color:#059669;
+                margin-bottom:10px;display:none;"></div>
+            
+            <div id="activeOverrideCard" style="display:none;background:#f0fdf4;
+                border:1px solid #bbf7d0;border-radius:10px;padding:12px;margin-bottom:10px;">
+                <div style="font-size:11px;font-weight:700;color:#065f46;
+                    text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">
+                    Active override
+                </div>
+                <div id="activeOverrideText" style="font-size:13px;color:var(--text1);
+                    margin-bottom:8px;"></div>
+                <button onclick="removeOverride()" style="background:transparent;
+                    border:1px solid #bbf7d0;border-radius:6px;padding:5px 10px;
+                    font-size:11px;color:#065f46;cursor:pointer;font-family:inherit;">
+                    Remove override
+                </button>
+            </div>
+            
+            <button onclick="applyOverride()" style="width:100%;background:var(--green2);
+                color:white;border:none;border-radius:10px;padding:13px;font-size:14px;
+                font-weight:600;cursor:pointer;font-family:inherit;">
+                Apply update
+            </button>
+        </div>
+    </div>
+
+    <!-- UPDATES TAB -->
+    <div id="ops-updates" class="ops-panel" style="display:none;">
+        <div style="padding:16px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:12px;">
+                Active updates
+            </div>
+            <div id="updatesList">
+                <div style="text-align:center;padding:32px 16px;color:var(--text3);font-size:13px;">
+                    No active updates today.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU TAB -->
+    <div id="ops-menu" class="ops-panel" style="display:none;">
+        <div style="padding:16px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:4px;">
+                Mess menu
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">
+                Upload the weekly mess menu so DayCue can assess dinner quality accurately.
+            </div>
+            
+            <div style="background:var(--bg3);border-radius:10px;padding:12px;
+                margin-bottom:12px;">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Current menu</div>
+                <div id="opsMenuStatus" style="font-size:13px;font-weight:500;
+                    color:var(--text1);">Loading...</div>
+            </div>
+            
+            <label style="display:block;background:var(--green2);color:white;
+                border-radius:10px;padding:13px;text-align:center;font-size:14px;
+                font-weight:600;cursor:pointer;margin-bottom:8px;">
+                Upload new menu (PDF / JPG / PNG)
+                <input type="file" id="opsMeuFileInput" accept=".pdf,.jpg,.jpeg,.png"
+                    style="display:none;" onchange="uploadOpsMenu(this)">
+            </label>
+            
+            <div id="opsMenuUploadProgress" style="display:none;text-align:center;
+                font-size:12px;color:#059669;padding:8px;">
+                ⏳ Extracting menu from file...
+            </div>
+            
+            <div id="opsMenuUploadResult" style="display:none;margin-bottom:8px;"></div>
+            
+            <button onclick="revertOpsMenu()" id="opsRevertBtn" style="display:none;
+                width:100%;background:var(--bg3);border:1px solid var(--border);
+                border-radius:10px;padding:12px;font-size:13px;color:var(--text2);
+                cursor:pointer;font-family:inherit;">
+                ↩ Revert to previous menu
+            </button>
+        </div>
+    </div>
+
+    <!-- CALENDAR TAB -->
+    <div id="ops-calendar" class="ops-panel" style="display:none;">
+        <div style="padding:16px;">
+            
+            <!-- Quiz Week Toggle -->
+            <div style="background:var(--bg2);border-radius:12px;border:1px solid var(--border);
+                padding:14px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text1);">
+                            Quiz week
+                        </div>
+                        <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+                            Increases midnight rush prediction intensity
+                        </div>
+                    </div>
+                    <div class="toggle-switch" id="ops-quiz-toggle" onclick="toggleOpsQuiz()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div id="opsQuizStatus" style="font-size:11px;color:var(--text3);margin-top:8px;"></div>
+            </div>
+
+            <!-- Add Event -->
+            <div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:12px;">
+                Campus events
+            </div>
+            
+            <div id="eventsList" style="margin-bottom:12px;">
+                <div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">
+                    No upcoming events added.
+                </div>
+            </div>
+            
+            <div style="background:var(--bg3);border-radius:10px;padding:12px;
+                border:1px solid var(--border);">
+                <div style="font-size:12px;font-weight:600;color:var(--text2);
+                    margin-bottom:10px;">Add event</div>
+                <input id="opsEventDate" type="date" style="width:100%;background:var(--bg2);
+                    border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+                    font-size:13px;font-family:inherit;color:var(--text1);margin-bottom:8px;">
+                <input id="opsEventName" type="text" style="width:100%;background:var(--bg2);
+                    border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+                    font-size:13px;font-family:inherit;color:var(--text1);margin-bottom:8px;"
+                    placeholder="e.g. Antaragni Day 1, Sports Meet, Freshers Night">
+                <select id="opsEventImpact" style="width:100%;background:var(--bg2);
+                    border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+                    font-size:13px;font-family:inherit;color:var(--text1);margin-bottom:10px;">
+                    <option value="HIGH_POSITIVE">Big event — canteen will be very busy</option>
+                    <option value="HIGH_NEGATIVE">Students going out — canteen will be quiet</option>
+                    <option value="MEDIUM_POSITIVE">Moderate extra footfall expected</option>
+                    <option value="NEUTRAL">Normal day</option>
+                </select>
+                <button onclick="addOpsEvent()" style="width:100%;background:var(--green2);
+                    color:white;border:none;border-radius:8px;padding:10px;font-size:13px;
+                    font-weight:600;cursor:pointer;font-family:inherit;">
+                    + Add event
+                </button>
+                <div id="opsEventStatus" style="font-size:12px;margin-top:8px;"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
     <!-- STATUS ROW -->
 <div class="status-row">
     <div class="status-card mess-decent" id="messCard" style="flex:1;">
@@ -661,80 +905,7 @@
     <div id="weatherAlertText"></div>
 </div>
 
-    <!-- ADMIN PANEL -->
-    <div class="admin-panel" id="adminPanel">
 
-        <div class="admin-section-title">⚡ Real-time Override</div>
-        <textarea class="admin-input" id="realtimeInput" rows="3"
-            placeholder="e.g. Mess closed today, hall event tonight..."></textarea>
-        <label class="upload-btn-label" for="imageInput">
-            📷 Attach notice or photo
-        </label>
-        <input type="file" id="imageInput" accept="image/*" onchange="handleImage(this)">
-        <div id="imagePreview" style="font-size:11px;color:#059669;margin-top:6px;"></div>
-
-        <div class="admin-divider"></div>
-
-        <div class="admin-section-title">📋 Mess Menu</div>
-        <div id="menuStatus" style="font-size:12px;color:var(--text2);margin-bottom:8px;">
-            Loading...
-        </div>
-        <label class="upload-btn-label" for="menuFileInput" id="menuUploadLabel">
-            📤 Upload mess menu (PDF / JPG / PNG)
-        </label>
-        <input type="file" id="menuFileInput" accept=".pdf,.jpg,.jpeg,.png"
-               onchange="uploadMenu(this)">
-        <div id="menuUploadProgress" style="display:none;font-size:12px;
-            color:#059669;margin-top:8px;">⏳ Extracting menu...</div>
-        <div id="menuUploadResult" style="display:none;margin-top:8px;"></div>
-        <button class="revert-btn" onclick="revertMenu()" id="revertBtn">
-            ↩ Revert to previous menu
-        </button>
-
-        <div class="admin-divider"></div>
-
-        <div class="admin-divider"></div>
-
-        <div class="admin-section-title">📝 Quiz Week</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;
-            padding:10px 0;">
-            <div>
-                <div style="font-size:13px;font-weight:500;color:var(--text1);">
-                    Quiz week active
-                </div>
-                <div style="font-size:11px;color:var(--text2);margin-top:2px;">
-                    Midnight rush will be predicted higher
-                </div>
-            </div>
-            <label style="position:relative;display:inline-block;width:44px;height:24px;">
-                <input type="checkbox" id="quizWeekToggle" 
-                    onchange="toggleQuizWeek(this.checked)"
-                    style="opacity:0;width:0;height:0;">
-                <span id="quizSlider" style="position:absolute;cursor:pointer;
-                    top:0;left:0;right:0;bottom:0;background:#cbd5e1;
-                    border-radius:24px;transition:0.3s;">
-                    <span style="position:absolute;content:'';height:18px;width:18px;
-                        left:3px;bottom:3px;background:white;border-radius:50%;
-                        transition:0.3s;" id="quizKnob"></span>
-                </span>
-            </label>
-        </div>
-        <div id="quizWeekStatus" style="font-size:11px;color:var(--text2);margin-bottom:8px;"></div>
-
-        <div class="admin-section-title">📅 Add Hostel Event</div>
-        <input class="admin-input" id="eventDate" type="date">
-        <input class="admin-input" id="eventName" type="text"
-            placeholder="e.g. Antaragni Day 1, Sports Meet, Freshers Night">
-        <select class="admin-input" id="eventImpact">
-            <option value="HIGH_POSITIVE">Big event — canteen will be very busy</option>
-            <option value="HIGH_NEGATIVE">Students going out — canteen will be quiet</option>
-            <option value="MEDIUM_POSITIVE">Moderate extra footfall expected</option>
-            <option value="NEUTRAL">Normal day</option>
-        </select>
-        <button class="add-event-btn" onclick="addEvent()">+ Add Event</button>
-        <div id="eventStatus" style="font-size:12px;margin-top:8px;"></div>
-
-    </div>
 
 <!-- PENDING FEEDBACK CARD -->
 <div id="pendingFeedbackCard" style="display:none;background:#fffbeb;
@@ -1000,6 +1171,8 @@
     let uploadedImage = null;
     let adminVisible = false;
     let isDark = false;
+    let realtimeOverride = null;
+    let realtimeImage = null;
 
     function toggleTheme() {
         isDark = !isDark;
@@ -1028,9 +1201,189 @@ document.getElementById('dateText').textContent =
     setInterval(updateClock, 30000);
 
     function toggleAdmin() {
-        adminVisible = !adminVisible;
-        document.getElementById('adminPanel').style.display = adminVisible ? 'block' : 'none';
+    document.getElementById('opsCenter').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    loadOpsMenuStatus();
+    loadOpsQuizStatus();
+}
+
+function closeOps() {
+    document.getElementById('opsCenter').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function switchOpsTab(tab) {
+    document.querySelectorAll('.ops-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.ops-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('ops-' + tab).style.display = 'block';
+    document.getElementById('tab-' + tab).classList.add('active');
+}
+
+let opsUploadedImage = null;
+
+function handleOpsImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            opsUploadedImage = e.target.result;
+            const preview = document.getElementById('opsImagePreview');
+            preview.textContent = '✓ ' + input.files[0].name;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
     }
+}
+
+function clearOverride() {
+    document.getElementById('opsOverrideText').value = '';
+    opsUploadedImage = null;
+    document.getElementById('opsImagePreview').style.display = 'none';
+    document.getElementById('opsImagePreview').textContent = '';
+}
+
+function applyOverride() {
+    const text = document.getElementById('opsOverrideText').value.trim();
+    if (!text) { showToast('Please enter an update first'); return; }
+    const card = document.getElementById('activeOverrideCard');
+    document.getElementById('activeOverrideText').textContent = text;
+    card.style.display = 'block';
+    showToast('✓ Override applied to today\'s forecast');
+    realtimeOverride = text;
+    realtimeImage = opsUploadedImage;
+}
+
+function removeOverride() {
+    document.getElementById('activeOverrideCard').style.display = 'none';
+    realtimeOverride = null;
+    realtimeImage = null;
+    showToast('Override removed');
+}
+
+async function loadOpsMenuStatus() {
+    try {
+        const r = await fetch('/get-menu');
+        const data = await r.json();
+        const statusEl = document.getElementById('opsMenuStatus');
+        const revertBtn = document.getElementById('opsRevertBtn');
+        if (data.source === 'hardcoded default') {
+            statusEl.textContent = 'Using default menu';
+            revertBtn.style.display = 'none';
+        } else {
+            statusEl.textContent = 'Uploaded: ' + data.source;
+            revertBtn.style.display = 'block';
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function uploadOpsMenu(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    document.getElementById('opsMenuUploadProgress').style.display = 'block';
+    document.getElementById('opsMenuUploadResult').style.display = 'none';
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const r = await fetch('/upload-menu', {method:'POST', body:formData});
+        const data = await r.json();
+        document.getElementById('opsMenuUploadProgress').style.display = 'none';
+        const resultEl = document.getElementById('opsMenuUploadResult');
+        resultEl.style.display = 'block';
+        if (data.status === 'success') {
+            resultEl.innerHTML = `<div style="background:#ecfdf5;border-radius:8px;
+                padding:10px;font-size:12px;color:#065f46;">
+                ✓ Menu extracted successfully</div>`;
+            document.getElementById('opsRevertBtn').style.display = 'block';
+            document.getElementById('opsMenuStatus').textContent = '✓ New menu saved';
+        } else {
+            resultEl.innerHTML = `<div style="background:#fef2f2;border-radius:8px;
+                padding:10px;font-size:12px;color:#991b1b;">✗ ${data.error}</div>`;
+        }
+    } catch(e) {
+        document.getElementById('opsMenuUploadProgress').style.display = 'none';
+        showToast('Upload failed. Try again.');
+    }
+    input.value = '';
+}
+
+async function revertOpsMenu() {
+    try {
+        const r = await fetch('/revert-menu', {method:'POST'});
+        const data = await r.json();
+        if (data.status) {
+            document.getElementById('opsMenuStatus').textContent = 'Reverted to previous menu';
+            document.getElementById('opsRevertBtn').style.display = 'none';
+            showToast('↩ Menu reverted');
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function toggleOpsQuiz() {
+    const toggle = document.getElementById('ops-quiz-toggle');
+    const isOn = toggle.classList.contains('on');
+    toggle.classList.toggle('on');
+    try {
+        const r = await fetch('/quiz-week', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({active: !isOn})
+        });
+        const data = await r.json();
+        const statusEl = document.getElementById('opsQuizStatus');
+        statusEl.textContent = data.quiz_week_active ? 
+            '✓ Quiz week ON — midnight rush prediction increased' : 
+            'Quiz week OFF';
+        statusEl.style.color = data.quiz_week_active ? '#059669' : 'var(--text3)';
+        showToast(data.quiz_week_active ? 'Quiz week activated' : 'Quiz week deactivated');
+    } catch(e) { console.error(e); }
+}
+
+async function loadOpsQuizStatus() {
+    try {
+        const r = await fetch('/quiz-week-status');
+        const data = await r.json();
+        const toggle = document.getElementById('ops-quiz-toggle');
+        const statusEl = document.getElementById('opsQuizStatus');
+        if (data.quiz_week_active) {
+            toggle.classList.add('on');
+            statusEl.textContent = '✓ Quiz week ON — midnight rush prediction increased';
+            statusEl.style.color = '#059669';
+        } else {
+            toggle.classList.remove('on');
+            statusEl.textContent = 'Quiz week OFF';
+            statusEl.style.color = 'var(--text3)';
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function addOpsEvent() {
+    const date = document.getElementById('opsEventDate').value;
+    const name = document.getElementById('opsEventName').value.trim();
+    const impact = document.getElementById('opsEventImpact').value;
+    const statusEl = document.getElementById('opsEventStatus');
+    if (!date || !name) {
+        statusEl.textContent = '⚠ Date and event name are required';
+        statusEl.style.color = '#dc2626';
+        return;
+    }
+    try {
+        const r = await fetch('/add-event', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({date, name, impact})
+        });
+        const data = await r.json();
+        if (data.status === 'saved') {
+            statusEl.textContent = '✓ Event added: ' + name;
+            statusEl.style.color = '#059669';
+            document.getElementById('opsEventDate').value = '';
+            document.getElementById('opsEventName').value = '';
+            showToast('✓ Event added');
+        }
+    } catch(e) {
+        statusEl.textContent = '✗ Error saving event';
+        statusEl.style.color = '#dc2626';
+    }
+}
 
     function handleImage(input) {
         if (input.files && input.files[0]) {
@@ -1083,8 +1436,7 @@ function changeFeedback() {
         const predCard = document.getElementById('predictionCard');
         const feedCard = document.getElementById('feedbackCard');
         const thanks = document.getElementById('thanksCard');
-        const instruction = document.getElementById('realtimeInput').value.trim();
-
+        const instruction = realtimeOverride || null;
         btn.disabled = true;
         btn.textContent = '⏳ Generating...';
         loading.style.display = 'block';
