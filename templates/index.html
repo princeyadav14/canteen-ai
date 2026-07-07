@@ -1761,17 +1761,33 @@ function changeFeedback() {
             } else {
                 const recent = data.history.slice(-7).reverse();
                 const levels = {'HIGH':'🔴','MEDIUM':'🟡','LOW':'🟢'};
+                const levelColors = {
+                    'HIGH': '#c13515',
+                    'MEDIUM': '#F36F21', 
+                    'LOW': '#065f46'
+                };
+                const levelLabels = {
+                    'HIGH': 'High rush',
+                    'MEDIUM': 'Normal rush',
+                    'LOW': 'Low rush'
+                };
                 historyList.innerHTML = recent.map(entry => `
                     <div class="history-item">
                         <div class="history-item-top">
                             <span class="history-item-day">${entry.day}, ${entry.date}</span>
-                            <span class="history-item-score">${entry.score ? entry.score + '/5' : '—'}</span>
+                            <span style="font-size:13px;font-weight:700;
+                                color:${entry.score >= 4 ? '#065f46' : entry.score >= 3 ? '#F36F21' : entry.score ? '#dc2626' : 'var(--text3)'};">
+                                ${entry.score ? entry.score + '/5' : '—'}
+                            </span>
                         </div>
                         <div class="history-item-bottom">
-                            <span class="history-item-level">
-                                ${levels[entry.predicted_level]||'⚪'} ${entry.predicted_level||'N/A'}
+                            <span style="font-size:11px;font-weight:600;
+                                color:${levelColors[entry.predicted_level] || 'var(--text3)'};
+                                background:${entry.predicted_level === 'HIGH' ? '#fff0e8' : entry.predicted_level === 'MEDIUM' ? '#fde8d4' : entry.predicted_level === 'LOW' ? '#f0fdf4' : 'var(--bg3)'};
+                                padding:2px 8px;border-radius:20px;">
+                                ${levelLabels[entry.predicted_level] || 'Unknown'}
                             </span>
-                            ${entry.note ? `<span class="history-item-note">— ${entry.note}</span>` : ''}
+                            ${entry.note ? `<span class="history-item-note">· ${entry.note}</span>` : ''}
                         </div>
                     </div>
                 `).join('');
