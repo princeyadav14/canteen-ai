@@ -259,11 +259,12 @@
 
         /* ── PREDICTION CARD ── */
         .prediction-card {
-            background: var(--green3);
-            border-radius: 14px;
-            padding: 16px;
-            display: none;
-            border: 1px solid var(--green4);
+        background: var(--bg2);
+        border-radius: 14px;
+        padding: 16px;
+        display: none;
+        border: 1px solid var(--border);
+        border-top: 3px solid #065f46;
         }
 
         .prediction-header {
@@ -288,9 +289,9 @@
             font-weight: 700;
         }
 
-        .level-high { background: #fef2f2; color: #dc2626; }
-        .level-medium { background: #fefce8; color: #ca8a04; }
-        .level-low { background: #f0fdf4; color: #16a34a; }
+        .level-high { background: #fff0e8; color: #c13515; font-family: 'Manrope', sans-serif; font-weight: 600; }
+        .level-medium { background: #fff4e8; color: #F36F21; font-family: 'Manrope', sans-serif; font-weight: 600; }
+        .level-low { background: #f0fdf4; color: #065f46; font-family: 'Manrope', sans-serif; font-weight: 600; }
 
         .prediction-text {
             font-size: 14px;
@@ -592,7 +593,9 @@
             display: block;
             margin-bottom: 4px;
         }
-
+        .status-card-value {
+            font-family: 'Manrope', sans-serif;
+        }
         #imageInput { display: none; }
         #menuFileInput { display: none; }
     </style>
@@ -852,7 +855,7 @@
     <div style="margin-bottom:14px;">
     <div onclick="toggleWhyToday()" style="display:flex;align-items:center;
     justify-content:space-between;cursor:pointer;padding:10px 12px;
-    background:var(--bg3);border-radius:10px;">
+    background:#fff8f3;border-radius:10px;border-left:3px solid #F36F21;">
     <span style="font-size:13px;font-weight:600;color:var(--text1);">
         Why this forecast?
     </span>
