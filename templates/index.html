@@ -611,8 +611,8 @@
         </div>
     </div>
     <div class="header-right">
-        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-        <button class="admin-btn" onclick="toggleAdmin()">⚙ Admin</button>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="theme-btn" onclick="toggleAdmin()" title="Operations" style="font-size:16px;">⚙</button>
     </div>
 </div>
 
@@ -789,17 +789,22 @@
 
     <!-- PREDICT BUTTON -->
     <button class="predict-btn" id="predictBtn" onclick="getPrediction()">
-        ✦ Get Today's Prediction
-    </button>
-
-    <!-- HISTORY BUTTON -->
-    <button class="history-btn" onclick="loadHistory()">
-        📊 View prediction history
-    </button>
-
-    <button class="history-btn" onclick="loadAccuracy()" style="margin-top:-8px;">
-    📈 View accuracy trend
+    Get Today's Plan
 </button>
+<div id="forecastTimestamp" style="display:none;text-align:center;
+    font-size:11px;color:var(--text3);margin-top:6px;"></div>
+
+    <!-- HISTORY & ACCURACY -->
+<div style="display:flex;gap:8px;margin-top:0;">
+    <button class="history-btn" onclick="loadHistory()" 
+        style="flex:1;font-size:12px;padding:10px 8px;">
+        Prediction history
+    </button>
+    <button class="history-btn" onclick="loadAccuracy()" 
+        style="flex:1;font-size:12px;padding:10px 8px;">
+        Accuracy trend
+    </button>
+</div>
 
     <div id="accuracyCard" style="display:none;background:var(--bg2);
     border-radius:14px;padding:16px;border:1px solid var(--border);margin-top:-4px;">
@@ -847,17 +852,16 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div>
             <div style="font-size:11px;font-weight:700;color:var(--green);
-                text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">
-                Today's Prediction
-            </div>
+    letter-spacing:0.8px;margin-bottom:4px;">
+    Today's plan
+</div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <div class="level-badge" id="levelBadge"></div>
                 <div style="font-size:11px;color:var(--text2);" id="confidenceText"></div>
             </div>
         </div>
         <div style="text-align:right;">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:2px;">Busiest slot</div>
-            <div style="font-size:13px;font-weight:600;color:var(--text1);" 
+<div style="font-size:11px;color:var(--text3);margin-bottom:2px;">Peak time</div>            <div style="font-size:13px;font-weight:600;color:var(--text1);" 
                 id="busiestSlot">—</div>
         </div>
     </div>
@@ -868,8 +872,8 @@
         justify-content:space-between;cursor:pointer;padding:10px 12px;
         background:var(--bg3);border-radius:10px;">
         <span style="font-size:13px;font-weight:600;color:var(--text1);">
-            Aaj demand kyun badhegi?
-        </span>
+    Why this forecast?
+</span>
         <span id="whyChevron" style="font-size:14px;color:var(--text3);
             transition:transform 0.2s;">⌄</span>
     </div>
@@ -880,32 +884,28 @@
 
     <!-- Row 3: Top items -->
     <div style="margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:600;color:var(--text3);
-            text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">
-            Prep these today
-        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);
+    letter-spacing:0.8px;margin-bottom:8px;">
+    Prepare more of
+</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;" id="topItems"></div>
     </div>
 
     <!-- Row 4: Practical tip -->
-    <div style="background:var(--bg3);border-radius:10px;padding:10px 12px;
-        margin-bottom:14px;" id="tipCard" style="display:none;">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);
-            text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">
-            💡 Tip
-        </div>
+    <div style="background:#fff8f3;border-radius:10px;padding:10px 12px;
+    margin-bottom:14px;border-left:3px solid #F36F21;" id="tipCard" style="display:none;">
+        <div style="font-size:10px;font-weight:700;color:#F36F21;
+    letter-spacing:0.8px;margin-bottom:4px;">
+    Tip for today
+</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.5;" 
             id="practicalTip"></div>
     </div>
 
     <!-- Row 5: Hindi message -->
     <div style="border-top:1px solid var(--border);padding-top:12px;">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);
-            text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">
-            Anoop Bhai ke liye
-        </div>
-        <div style="font-size:14px;line-height:1.7;color:var(--text1);" 
-            id="predictionText"></div>
+    <div style="font-size:14px;line-height:1.7;color:var(--text1);" 
+        id="predictionText"></div>
     </div>
 
 </div>
@@ -1244,7 +1244,10 @@ function changeFeedback() {
 
         loading.style.display = 'none';
         btn.disabled = false;
-        btn.textContent = '🔄 Generate Again';
+        btn.textContent = 'Refresh Forecast';
+        predictionTime = new Date();
+        updateTimestamp();
+        document.getElementById('forecastTimestamp').style.display = 'block';
     }
 
     async function submitFeedback() {
@@ -1582,6 +1585,21 @@ async function loadQuizWeekStatus() {
         toggleQuizWeek(data.quiz_week_active);
     } catch(e) { console.error(e); }
 }
+
+let predictionTime = null;
+
+function updateTimestamp() {
+    if (!predictionTime) return;
+    const mins = Math.floor((new Date() - predictionTime) / 60000);
+    const text = mins < 1 ? 'Forecast updated just now' : 
+                 mins === 1 ? 'Forecast updated 1 min ago' : 
+                 `Forecast updated ${mins} min ago`;
+    document.getElementById('forecastTimestamp').textContent = text;
+}
+
+setInterval(updateTimestamp, 60000);
+
+
     loadMenuStatus();
     checkPendingFeedback();
     loadQuizWeekStatus();
