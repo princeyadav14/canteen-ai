@@ -57,11 +57,13 @@
 
         /* ── HEADER ── */
         .header {
-            background: var(--green);
+        background: var(--green);
             padding: 14px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
+
         }
 
         .header-left {
@@ -655,8 +657,35 @@
         </div>
     </div>
     <div class="header-right">
-    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-    <button class="theme-btn" onclick="toggleAdmin()" title="Operations" style="font-size:16px;">⚙</button>
+    <button class="theme-btn" onclick="toggleSettings()" id="themeBtn" style="font-size:18px;letter-spacing:1px;">⋮</button>
+
+<div id="settingsDropdown" style="display:none;position:absolute;top:52px;right:16px;
+    background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+    padding:8px;z-index:200;min-width:180px;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+    <div style="font-size:11px;font-weight:600;color:var(--text3);
+        text-transform:uppercase;letter-spacing:0.8px;padding:6px 8px 4px;">
+        Appearance
+    </div>
+    <button onclick="setTheme('light')" id="themeLight"
+    style="width:100%;text-align:left;padding:8px 10px;border:none;
+    background:transparent;border-radius:8px;font-size:13px;
+    color:var(--text1);cursor:pointer;font-family:inherit;font-weight:600;">
+    Light mode
+</button>
+<button onclick="setTheme('dark')" id="themeDark"
+    style="width:100%;text-align:left;padding:8px 10px;border:none;
+    background:transparent;border-radius:8px;font-size:13px;
+    color:var(--text1);cursor:pointer;font-family:inherit;">
+    Dark mode
+</button>
+    <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+    <button onclick="closeSettings();toggleAdmin();"
+        style="width:100%;text-align:left;padding:8px 10px;border:none;
+        background:transparent;border-radius:8px;font-size:13px;
+        color:var(--text1);cursor:pointer;font-family:inherit;">
+        ⚙️ Manage operations
+    </button>
+</div>
     </div>
 </div>
 
@@ -1174,11 +1203,30 @@
     let realtimeOverride = null;
     let realtimeImage = null;
 
-    function toggleTheme() {
-        isDark = !isDark;
-        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
-    }
+    function toggleSettings() {
+    const dropdown = document.getElementById('settingsDropdown');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+function closeSettings() {
+    document.getElementById('settingsDropdown').style.display = 'none';
+}
+
+function setTheme(theme) {
+    isDark = theme === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.getElementById('themeLight').style.fontWeight = isDark ? '400' : '600';
+    document.getElementById('themeDark').style.fontWeight = isDark ? '600' : '400';
+    closeSettings();
+}
+
+function toggleAdmin() {
+    closeSettings();
+    document.getElementById('opsCenter').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    loadOpsMenuStatus();
+    loadOpsQuizStatus();
+}
 
     function updateClock() {
         const now = new Date();
