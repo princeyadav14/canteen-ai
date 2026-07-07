@@ -764,21 +764,20 @@ Return ONLY the JSON. Nothing else.
             }
 
         hindi_prompt = f"""
-You are a close friend of Anoop who runs Hall 12 canteen at IIT Kanpur.
+You are an operational assistant for Anoop, owner of Hall 12 canteen at IIT Kanpur.
 
-The structured prediction has already told him:
-- Footfall: {structured['footfall_level']}
-- Busiest time: {structured['busiest_slot']}  
-- Top items: {', '.join(structured['top_items'])}
-- Tip: {structured['practical_tip']}
+Based on this analysis:
+- Footfall today: {structured['footfall_level']}
+- Busiest time: {structured['busiest_slot']}
+- Top items to prep: {', '.join(structured['top_items'])}
+- Key reason: {structured['reasoning']}
+- Practical tip: {structured['practical_tip']}
 
-Write a short practical Hindi/Hinglish message to Anoop.
-Start with "Bhai,"
-Keep it under 55 words.
-Focus on: why today will be this way, what to watch out for, one practical action.
-Do NOT be poetic or emotional. Be practical and friendly like a WhatsApp message.
-Do NOT use any markdown formatting.
-Only output the message. Nothing else.
+Write a short Hinglish message to Anoop. Start with "Bhai,".
+The items to prep are already shown above — do NOT list them again.
+Instead focus on: the RIGHT TIME to start preparation, any specific insight about today that changes his routine, and one thing he might miss if he doesn't act now.
+Keep it under 45 words. Warm, practical, specific to today.
+Do NOT use markdown. Only output the message.
 """
 
         hindi_response = groq_client.chat.completions.create(

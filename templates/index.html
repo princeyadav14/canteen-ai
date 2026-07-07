@@ -643,7 +643,7 @@
         background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;
         padding:5px 12px;font-size:12px;color:#1e40af;">
         <span id="weatherTitle"></span>
-        <span style="color:#93c5fd;">·</span>
+        <span style="color:#93c5fd;padding:0 2px;">·</span>
         <span id="weatherSubtitle"></span>
     </div>
 </div>
@@ -806,24 +806,7 @@
     </button>
 </div>
 
-    <div id="accuracyCard" style="display:none;background:var(--bg2);
-    border-radius:14px;padding:16px;border:1px solid var(--border);margin-top:-4px;">
-    <div style="display:flex;justify-content:space-between;
-        align-items:center;margin-bottom:12px;">
-        <span style="font-size:14px;font-weight:600;color:var(--text1);">
-            📈 Prediction Accuracy
-        </span>
-        <button onclick="document.getElementById('accuracyCard').style.display='none'"
-            style="background:none;border:none;font-size:18px;
-            color:var(--text3);cursor:pointer;">✕</button>
-    </div>
-    <div id="accuracyOverall" style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:36px;font-weight:700;color:var(--green2);"
-            id="overallPct">—</div>
-        <div style="font-size:12px;color:var(--text2);">Overall accuracy</div>
-    </div>
-    <div id="accuracyWeeks"></div>
-</div>
+
 
     <!-- LOADING -->
     <div class="loading-state" id="loadingState">
@@ -856,9 +839,8 @@
     Today's plan
 </div>
             <div style="display:flex;align-items:center;gap:8px;">
-                <div class="level-badge" id="levelBadge"></div>
-                <div style="font-size:11px;color:var(--text2);" id="confidenceText"></div>
-            </div>
+    <div class="level-badge" id="levelBadge"></div>
+</div>
         </div>
         <div style="text-align:right;">
 <div style="font-size:11px;color:var(--text3);margin-bottom:2px;">Peak time</div>            <div style="font-size:13px;font-weight:600;color:var(--text1);" 
@@ -869,14 +851,17 @@
     <!-- Row 2: Signal factors -->
     <div style="margin-bottom:14px;">
     <div onclick="toggleWhyToday()" style="display:flex;align-items:center;
-        justify-content:space-between;cursor:pointer;padding:10px 12px;
-        background:var(--bg3);border-radius:10px;">
-        <span style="font-size:13px;font-weight:600;color:var(--text1);">
-    Why this forecast?
-</span>
+    justify-content:space-between;cursor:pointer;padding:10px 12px;
+    background:var(--bg3);border-radius:10px;">
+    <span style="font-size:13px;font-weight:600;color:var(--text1);">
+        Why this forecast?
+    </span>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11px;color:#F36F21;font-weight:600;" id="confidenceText"></span>
         <span id="whyChevron" style="font-size:14px;color:var(--text3);
             transition:transform 0.2s;">⌄</span>
     </div>
+</div>
     <div id="whyBody" style="display:none;padding:8px 4px 0;">
         <div id="whyItems"></div>
     </div>
@@ -979,6 +964,26 @@
     </div>
 
 </div>
+
+<div id="accuracyCard" style="display:none;background:var(--bg2);
+    border-radius:14px;padding:16px;border:1px solid var(--border);margin-top:-4px;">
+    <div style="display:flex;justify-content:space-between;
+        align-items:center;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:600;color:var(--text1);">
+            📈 Prediction Accuracy
+        </span>
+        <button onclick="document.getElementById('accuracyCard').style.display='none'"
+            style="background:none;border:none;font-size:18px;
+            color:var(--text3);cursor:pointer;">✕</button>
+    </div>
+    <div id="accuracyOverall" style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:36px;font-weight:700;color:var(--green2);"
+            id="overallPct">—</div>
+        <div style="font-size:12px;color:var(--text2);">Overall accuracy</div>
+    </div>
+    <div id="accuracyWeeks"></div>
+</div>
+
 
 <!-- FOOTER -->
 <div class="footer">
