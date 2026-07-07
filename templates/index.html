@@ -629,18 +629,24 @@
 <div class="main">
 
     <!-- STATUS ROW -->
-    <div class="status-row">
-        <div class="status-card mess-decent" id="messCard">
-            <div class="status-card-label">Mess Dinner</div>
-            <div class="status-card-value" id="messTitle">Loading...</div>
-            <div class="status-card-sub" id="messSubtitle">Click predict to check</div>
-        </div>
-        <div class="status-card weather-card-style" id="weatherCard" style="display:none;">
-            <div class="status-card-label">Kanpur Weather</div>
-            <div class="status-card-value" id="weatherTitle">—</div>
-            <div class="status-card-sub" id="weatherSubtitle">—</div>
-        </div>
+<div class="status-row">
+    <div class="status-card mess-decent" id="messCard" style="flex:1;">
+        <div class="status-card-label">Mess Dinner</div>
+        <div class="status-card-value" id="messTitle">Loading...</div>
+        <div class="status-card-sub" id="messSubtitle">Click predict to check</div>
     </div>
+</div>
+
+<!-- WEATHER CHIP -->
+<div id="weatherCard" style="display:none;margin-bottom:4px;">
+    <div style="display:inline-flex;align-items:center;gap:6px;
+        background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;
+        padding:5px 12px;font-size:12px;color:#1e40af;">
+        <span id="weatherTitle"></span>
+        <span style="color:#93c5fd;">·</span>
+        <span id="weatherSubtitle"></span>
+    </div>
+</div>
 
     <!-- SUDDEN WEATHER ALERT -->
 <div id="weatherAlertCard" style="display:none;background:#fef2f2;
@@ -651,12 +657,6 @@
         letter-spacing:0.8px;margin-bottom:4px;">⚡ Sudden Weather Change</div>
     <div id="weatherAlertText"></div>
 </div>
-
-    <!-- WEATHER IMPACT -->
-    <div id="weatherImpactCard" style="display:none;background:var(--bg2);
-        border-radius:10px;padding:10px 12px;border:1px solid var(--border);
-        font-size:12px;color:var(--text2);line-height:1.5;" id="weatherImpact">
-    </div>
 
     <!-- ADMIN PANEL -->
     <div class="admin-panel" id="adminPanel">
@@ -1107,17 +1107,13 @@ function changeFeedback() {
                         'Clear':'☀️','Clouds':'⛅','Rain':'🌧️',
                         'Thunderstorm':'⛈️','Drizzle':'🌦️','Haze':'🌫️'
                     };
-
                     const icon = icons[w.condition] || '🌤️';
                     document.getElementById('weatherTitle').textContent =
-                        icon + ' ' + w.temp + '°C — ' + w.condition;
+                        icon + ' ' + w.temp + '°C · ' + w.condition;
                     document.getElementById('weatherSubtitle').textContent =
-                        'Feels ' + w.feels_like + '°C · Rain ' + w.rain_probability + '%';
+                        'Rain ' + w.rain_probability + '%';
                     document.getElementById('weatherCard').style.display = 'block';
-                    if (data.weather_impact) {
-                        document.getElementById('weatherImpactCard').textContent = data.weather_impact;
-                        document.getElementById('weatherImpactCard').style.display = 'block';
-                    }
+                    
                 }
 
                 if (data.weather_alert) {
