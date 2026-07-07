@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>DayCue — Know the way, every day</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap" rel="stylesheet">    <style>
         :root {
             --bg: #f8fafc;
             --bg2: #ffffff;
@@ -71,10 +70,11 @@
         }
 
         .header-name {
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        font-family: 'Manrope', sans-serif;
         }
 
         .header-slogan {
@@ -602,8 +602,13 @@
 <!-- HEADER -->
 <div class="header">
     <div class="header-left">
-        <div class="header-name">⚡ DayCue</div>
-        <div class="header-slogan">Know the way, every day.</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <img src="/static/logo.png" style="height:40px;width:40px;object-fit:contain;background:white;border-radius:6px;padding:3px;" alt="DayCue">
+            <div>
+                <div class="header-name"><span>Day</span><span style="color:#F36F21;">Cue</span></div>
+                <div class="header-slogan">Know the way, every day.</div>
+            </div>
+        </div>
     </div>
     <div class="header-right">
         <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
