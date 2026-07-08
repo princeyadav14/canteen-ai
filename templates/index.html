@@ -53,6 +53,10 @@
             max-width: 480px;
             margin: 0 auto;
             box-shadow: 0 0 40px rgba(0,0,0,0.2);
+            font-size: 15px;
+            font-weight: 450;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* ── HEADER ── */
@@ -679,12 +683,25 @@
     Dark mode
 </button>
     <div style="height:1px;background:var(--border);margin:4px 0;"></div>
-    <button onclick="closeSettings();toggleAdmin();"
-        style="width:100%;text-align:left;padding:8px 10px;border:none;
-        background:transparent;border-radius:8px;font-size:13px;
-        color:var(--text1);cursor:pointer;font-family:inherit;">
-        ⚙️ Manage operations
-    </button>
+<button onclick="closeSettings();loadHistory();"
+    style="width:100%;text-align:left;padding:8px 10px;border:none;
+    background:transparent;border-radius:8px;font-size:13px;
+    color:var(--text1);cursor:pointer;font-family:inherit;">
+    Prediction history
+</button>
+<button onclick="closeSettings();loadAccuracy();"
+    style="width:100%;text-align:left;padding:8px 10px;border:none;
+    background:transparent;border-radius:8px;font-size:13px;
+    color:var(--text1);cursor:pointer;font-family:inherit;">
+    Accuracy trend
+</button>
+<div style="height:1px;background:var(--border);margin:4px 0;"></div>
+<button onclick="closeSettings();toggleAdmin();"
+    style="width:100%;text-align:left;padding:8px 10px;border:none;
+    background:transparent;border-radius:8px;font-size:13px;
+    color:var(--text1);cursor:pointer;font-family:inherit;">
+    Manage operations
+</button>
 </div>
     </div>
 </div>
@@ -1001,24 +1018,7 @@
     <span style="font-size:11px;color:var(--text3);margin-left:6px;" 
         id="forecastTimestamp"></span>
 </div>
-
-<!-- HISTORY & ACCURACY -->
-<div style="display:flex;justify-content:center;gap:24px;padding:4px 0;">
-    <button onclick="loadHistory()" style="background:transparent;border:none;
-        font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;
-        display:flex;align-items:center;gap:4px;">
-        📊 History
-    </button>
-    <button onclick="loadAccuracy()" style="background:transparent;border:none;
-        font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;
-        display:flex;align-items:center;gap:4px;">
-        📈 Accuracy
-    </button>
-</div>
-
-
-
-    <!-- LOADING -->
+<!-- LOADING -->
     <div class="loading-state" id="loadingState">
         <div class="loading-dots">
             <div class="dot"></div>
@@ -1196,9 +1196,9 @@
 
 
 <!-- FOOTER -->
-<div class="footer" style="text-align:center;padding:20px 16px;opacity:0.3;">
-    <img src="/static/logo.png" style="height:24px;width:24px;object-fit:contain;
-        filter:grayscale(1);" alt="DayCue">
+<div class="footer" style="text-align:center;padding:20px 16px;">
+    <img src="/static/logo.png" style="height:28px;width:28px;
+    object-fit:contain;opacity:0.15;" alt="DayCue">
 </div>
 
 <script>
@@ -2127,7 +2127,15 @@ setInterval(updateTimestamp, 60000);
     checkPendingFeedback();
     loadQuizWeekStatus();
     loadMessStatus();
-
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('settingsDropdown');
+    const threeDotsBtn = document.getElementById('themeBtn');
+    if (dropdown.style.display === 'block' && 
+        !dropdown.contains(e.target) && 
+        e.target !== threeDotsBtn) {
+        dropdown.style.display = 'none';
+    }
+});
 </script>
 <div id="toastMsg" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
         background:#0f172a;color:#fff;border-radius:10px;padding:12px 20px;
