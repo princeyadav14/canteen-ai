@@ -645,6 +645,16 @@
         }
         #imageInput { display: none; }
         #menuFileInput { display: none; }
+
+        @keyframes logoPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes lineRise {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
     </style>
 </head>
 <body>
@@ -1019,14 +1029,26 @@
         id="forecastTimestamp"></span>
 </div>
 <!-- LOADING -->
-    <div class="loading-state" id="loadingState">
-        <div class="loading-dots">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+<div class="loading-state" id="loadingState">
+    <div style="text-align:center;padding:24px 16px;">
+        <img src="/static/logo.png" id="loadingLogo"
+            style="height:48px;width:48px;object-fit:contain;
+            animation:logoPulse 1.5s ease-in-out infinite;
+            filter:hue-rotate(0deg);">
+        <div style="margin-top:16px;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:500;color:var(--text2);" 
+                id="loadingStatus">Reading today's mess menu...</div>
         </div>
-        <div class="loading-text">AI is thinking...</div>
+        <div style="position:relative;height:3px;background:var(--border);
+            border-radius:3px;overflow:hidden;width:160px;margin:0 auto;">
+            <div id="loadingLine" style="position:absolute;top:0;left:-100%;
+                height:100%;width:100%;background:linear-gradient(90deg, 
+                transparent, #F36F21, transparent);
+                animation:lineRise 1.5s ease-in-out infinite;">
+            </div>
+        </div>
     </div>
+</div>
 
     <!-- ALERT -->
     <div class="alert-card" id="alertCard">
@@ -1210,6 +1232,7 @@
     let isDark = false;
     let realtimeOverride = null;
     let realtimeImage = null;
+    let loadingMsgInterval = null;
 
     function toggleSettings() {
     const dropdown = document.getElementById('settingsDropdown');
@@ -1498,6 +1521,19 @@ function changeFeedback() {
         btn.disabled = true;
         btn.textContent = '⏳ Generating...';
         loading.style.display = 'block';
+        const loadingMessages = [
+    'Reading today\'s mess menu...',
+    'Checking Kanpur weather...',
+    'Analysing campus signals...',
+    'Calculating rush patterns...',
+    'Preparing your forecast...'
+];
+let msgIndex = 0;
+loadingMsgInterval = setInterval(() => {
+    msgIndex = (msgIndex + 1) % loadingMessages.length;
+    const statusEl = document.getElementById('loadingStatus');
+    if (statusEl) statusEl.textContent = loadingMessages[msgIndex];
+}, 900);
         predCard.style.display = 'none';
         feedCard.style.display = 'none';
         thanks.style.display = 'none';
@@ -1654,7 +1690,7 @@ function changeFeedback() {
             document.getElementById('predictionText').textContent = 'Something went wrong. Try again.';
             document.getElementById('predictionCard').style.display = 'block';
         }
-
+        clearInterval(loadingMsgInterval);
         loading.style.display = 'none';
         btn.disabled = false;
         btn.style.display = 'none';
