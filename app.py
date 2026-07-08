@@ -1077,5 +1077,30 @@ def quiz_week_status():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/mess-status", methods=["GET"])
+def mess_status():
+    try:
+        today = now_ist()
+        day_name = today.strftime("%A")
+        current_menu, menu_source = get_mess_menu()
+        mess_today = current_menu.get(day_name, {})
+        dinner_quality = mess_today.get("dinner_quality", "DECENT")
+        dinner_main = mess_today.get("dinner", "")
+        dinner_extra = mess_today.get("dinner_extra", "")
+        
+        is_bad = dinner_quality == "BAD"
+        is_good = dinner_quality == "GOOD"
+        
+        return jsonify({
+            "dinner_quality": dinner_quality,
+            "dinner_main": dinner_main,
+            "dinner_extra": dinner_extra,
+            "is_bad_dinner_day": is_bad,
+            "is_good_dinner_day": is_good,
+            "day": day_name
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)

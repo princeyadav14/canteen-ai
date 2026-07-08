@@ -80,7 +80,7 @@
         }
 
         .header-slogan {
-            color: #6ee7b7;
+            color: rgba(255,255,255,0.65);
             font-size: 11px;
             font-weight: 400;
             margin-top: 1px;
@@ -649,9 +649,9 @@
 <div class="header">
     <div class="header-left">
         <div style="display:flex;align-items:center;gap:8px;">
-            <img src="/static/logo.png" style="height:40px;width:40px;object-fit:contain;background:white;border-radius:6px;padding:3px;" alt="DayCue">
+            <img src="/static/logo_white.png" style="height:64px;width:64px;object-fit:contain;margin-right:-8px;" alt="DayCue">
             <div>
-                <div class="header-name"><span>Day</span><span style="color:#F36F21;">Cue</span></div>
+                <div class="header-name">DayCue</div>
                 <div class="header-slogan">Know the way, every day.</div>
             </div>
         </div>
@@ -740,8 +740,8 @@
             <textarea id="opsOverrideText" style="width:100%;background:var(--bg3);
                 border:1px solid var(--border);border-radius:10px;padding:12px;
                 font-size:13px;font-family:inherit;color:var(--text1);resize:none;
-                margin-bottom:10px;" rows="3"
-                placeholder="e.g. Mess dinner cancelled today, Hall 12 fest at 9pm, Pest control in canteen..."></textarea>
+                margin-bottom:10px;box-sizing:border-box;" rows="4"
+                placeholder="e.g. Mess dinner cancelled, Hall event at 9pm..."></textarea>
             
             <div style="display:flex;gap:8px;margin-bottom:10px;">
                 <label style="flex:1;background:var(--bg3);border:1px dashed var(--border);
@@ -915,12 +915,9 @@
 
 <!-- WEATHER CHIP -->
 <div id="weatherCard" style="display:none;margin-bottom:4px;">
-    <div style="display:inline-flex;align-items:center;gap:6px;
+    <div id="weatherChip" style="display:inline-flex;align-items:center;
         background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;
-        padding:5px 12px;font-size:12px;color:#1e40af;">
-        <span id="weatherTitle"></span>
-        <span style="color:#93c5fd;padding:0 2px;">·</span>
-        <span id="weatherSubtitle"></span>
+        padding:5px 12px;font-size:12px;color:#1e40af;line-height:1;">
     </div>
 </div>
 
@@ -937,14 +934,15 @@
 
 
 <!-- PENDING FEEDBACK CARD -->
-<div id="pendingFeedbackCard" style="display:none;background:#fffbeb;
-    border:1px solid #fcd34d;border-radius:14px;padding:16px;margin-bottom:4px;">
-    <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px;">
-        ⏳ Kal ki prediction kaisi rahi?
-    </div>
-    <div style="font-size:12px;color:#78350f;margin-bottom:12px;" id="pendingDateText">
-        Rate karo pehle, phir aaj ki prediction milegi
-    </div>
+<div id="pendingFeedbackCard" style="display:none;background:#fff8f3;
+    border:1px solid #F36F21;border-left:4px solid #F36F21;
+    border-radius:14px;padding:16px;margin-bottom:4px;">
+    <div style="font-size:14px;font-weight:600;color:#065f46;margin-bottom:2px;">
+    How accurate was yesterday's forecast?
+</div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:12px;" id="pendingDateText">
+    Loading...
+</div>
     <div style="display:flex;gap:6px;margin-bottom:10px;" id="pendingScaleRow">
         <button onclick="selectPendingScore(1)" style="flex:1;background:white;border:2px solid #fcd34d;border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;">
             <span style="font-size:18px;display:block;">😕</span>
@@ -975,7 +973,7 @@
             padding:8px;font-size:12px;resize:none;margin-bottom:8px;font-family:inherit;"
             rows="2" placeholder="Kuch aur batana ho toh yahan likho... Jaise: 'Maggi zyada biki'"></textarea>
         <div style="display:flex;gap:8px;">
-            <button onclick="submitPendingFeedback()" style="flex:2;background:#92400e;
+            <button onclick="submitPendingFeedback()" style="flex:2;background:#065f46;
                 color:white;border:none;border-radius:8px;padding:9px;font-size:12px;
                 font-weight:600;cursor:pointer;font-family:inherit;">Save karo</button>
             <button onclick="changePendingScore()" style="flex:1;background:transparent;
@@ -984,28 +982,37 @@
         </div>
     </div>
     <button onclick="skipPendingFeedback()" style="width:100%;background:transparent;
-        border:1px solid #fcd34d;border-radius:8px;padding:8px;font-size:12px;
-        color:#92400e;cursor:pointer;font-family:inherit;">
-        Abhi nahi
-    </button>
+    border:1px solid var(--border);border-radius:8px;padding:8px;font-size:12px;
+    color:var(--text2);cursor:pointer;font-family:inherit;">
+    Skip for now
+</button>
 </div>
 
     <!-- PREDICT BUTTON -->
     <button class="predict-btn" id="predictBtn" onclick="getPrediction()">
     Get Today's Plan
 </button>
-<div id="forecastTimestamp" style="display:none;text-align:center;
-    font-size:11px;color:var(--text3);margin-top:6px;"></div>
-
-    <!-- HISTORY & ACCURACY -->
-<div style="display:flex;gap:8px;margin-top:0;">
-    <button class="history-btn" onclick="loadHistory()" 
-        style="flex:1;font-size:12px;padding:10px 8px;">
-        Prediction history
+<div id="refreshRow" style="display:none;text-align:center;margin-top:8px;">
+    <button onclick="getPrediction()" style="background:transparent;border:none;
+        font-size:12px;color:var(--green2);cursor:pointer;font-family:inherit;
+        font-weight:500;">
+        ↻ Refresh forecast
     </button>
-    <button class="history-btn" onclick="loadAccuracy()" 
-        style="flex:1;font-size:12px;padding:10px 8px;">
-        Accuracy trend
+    <span style="font-size:11px;color:var(--text3);margin-left:6px;" 
+        id="forecastTimestamp"></span>
+</div>
+
+<!-- HISTORY & ACCURACY -->
+<div style="display:flex;justify-content:center;gap:24px;padding:4px 0;">
+    <button onclick="loadHistory()" style="background:transparent;border:none;
+        font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;
+        display:flex;align-items:center;gap:4px;">
+        📊 History
+    </button>
+    <button onclick="loadAccuracy()" style="background:transparent;border:none;
+        font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;
+        display:flex;align-items:center;gap:4px;">
+        📈 Accuracy
     </button>
 </div>
 
@@ -1189,8 +1196,9 @@
 
 
 <!-- FOOTER -->
-<div class="footer">
-    DayCue · Hall 12 Canteen · IIT Kanpur
+<div class="footer" style="text-align:center;padding:20px 16px;opacity:0.3;">
+    <img src="/static/logo.png" style="height:24px;width:24px;object-fit:contain;
+        filter:grayscale(1);" alt="DayCue">
 </div>
 
 <script>
@@ -1485,6 +1493,8 @@ function changeFeedback() {
         const feedCard = document.getElementById('feedbackCard');
         const thanks = document.getElementById('thanksCard');
         const instruction = realtimeOverride || null;
+        document.getElementById('refreshRow').style.display = 'none';
+        btn.style.display = 'block';
         btn.disabled = true;
         btn.textContent = '⏳ Generating...';
         loading.style.display = 'block';
@@ -1508,7 +1518,8 @@ function changeFeedback() {
             if (data.error) {
                 document.getElementById('predictionText').textContent = 'Error: ' + data.error;
                 predCard.style.display = 'block';
-            } else {
+            } 
+            else {
                 if (data.weather) {
                     const w = data.weather;
                     const icons = {
@@ -1516,10 +1527,8 @@ function changeFeedback() {
                         'Thunderstorm':'⛈️','Drizzle':'🌦️','Haze':'🌫️'
                     };
                     const icon = icons[w.condition] || '🌤️';
-                    document.getElementById('weatherTitle').textContent =
-                        icon + ' ' + w.temp + '°C · ' + w.condition;
-                    document.getElementById('weatherSubtitle').textContent =
-                        'Rain ' + w.rain_probability + '%';
+                    document.getElementById('weatherChip').textContent =
+                    icon + ' ' + w.temp + '°C · ' + w.condition + ' · Rain ' + w.rain_probability + '%';
                     document.getElementById('weatherCard').style.display = 'block';
                     
                 }
@@ -1648,10 +1657,10 @@ function changeFeedback() {
 
         loading.style.display = 'none';
         btn.disabled = false;
-        btn.textContent = 'Refresh Forecast';
+        btn.style.display = 'none';
+        document.getElementById('refreshRow').style.display = 'block';
         predictionTime = new Date();
-        updateTimestamp();
-        document.getElementById('forecastTimestamp').style.display = 'block';
+    updateTimestamp();
     }
 
     async function submitFeedback() {
@@ -1855,8 +1864,14 @@ async function checkPendingFeedback() {
         if (data.pending) {
             pendingEntry = data.pending;
             const card = document.getElementById('pendingFeedbackCard');
-            document.getElementById('pendingDateText').textContent = 
-                `${pendingEntry.day}, ${pendingEntry.date} ki prediction — rate karo`;
+            const entryDate = new Date(pendingEntry.date);
+const day = entryDate.getDate();
+const suffix = day === 1 || day === 21 || day === 31 ? 'st' :
+               day === 2 || day === 22 ? 'nd' :
+               day === 3 || day === 23 ? 'rd' : 'th';
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+document.getElementById('pendingDateText').textContent = 
+    `${pendingEntry.day}, ${day}${suffix} ${months[entryDate.getMonth()]} — rate it below`;
             card.style.display = 'block';
         }
     } catch(e) {
@@ -1871,7 +1886,7 @@ function selectPendingScore(score) {
     pendingScore = score;
     const btns = document.getElementById('pendingScaleRow').querySelectorAll('button');
     btns.forEach((btn, i) => {
-        btn.style.background = i + 1 === score ? '#92400e' : 'white';
+        btn.style.background = i + 1 === score ? '#065f46' : 'white';
         btn.querySelector('span:last-child').style.color = i + 1 === score ? '#fef3c7' : '#92400e';
     });
     document.getElementById('pendingConfirmText').textContent = 
@@ -2082,12 +2097,36 @@ function updateTimestamp() {
     document.getElementById('forecastTimestamp').textContent = text;
 }
 
+async function loadMessStatus() {
+    try {
+        const r = await fetch('/mess-status');
+        const data = await r.json();
+        const messCard = document.getElementById('messCard');
+        if (data.dinner_quality === 'BAD') {
+            messCard.className = 'status-card mess-bad';
+            document.getElementById('messTitle').textContent = '⚠ Bad mess dinner';
+            document.getElementById('messSubtitle').textContent = 'Students likely to prefer canteen';
+        } else if (data.dinner_quality === 'GOOD') {
+            messCard.className = 'status-card mess-good';
+            document.getElementById('messTitle').textContent = '✓ Good mess dinner';
+            document.getElementById('messSubtitle').textContent = 'Students will prefer mess tonight';
+        } else {
+            messCard.className = 'status-card mess-decent';
+            document.getElementById('messTitle').textContent = '~ Decent mess dinner';
+            document.getElementById('messSubtitle').textContent = 'Mixed — some may prefer canteen';
+        }
+    } catch(e) {
+        console.error(e);
+    }
+}
+
 setInterval(updateTimestamp, 60000);
 
 
     loadMenuStatus();
     checkPendingFeedback();
     loadQuizWeekStatus();
+    loadMessStatus();
 
 </script>
 <div id="toastMsg" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
