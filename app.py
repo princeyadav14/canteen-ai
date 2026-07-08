@@ -664,6 +664,13 @@ Popular non-veg: {', '.join(POPULAR_ITEMS['meal_nonveg'])}
 
 === RECENT FEEDBACK (last 5 days) ===
 {json.dumps(recent_feedback, indent=2) if recent_feedback else 'No feedback yet'}
+
+=== STRUCTURED INSIGHTS FROM FEEDBACK NOTES ===
+{chr(10).join([
+    f"- {h.get('day')} {h.get('date')}: stockout={h['parsed_note'].get('stockout_item')}, footfall={h['parsed_note'].get('footfall_vs_prediction')}, issue={h['parsed_note'].get('issue')}, positive={h['parsed_note'].get('positive')}"
+    for h in recent_feedback 
+    if h.get('parsed_note') and any(v for v in h['parsed_note'].values() if v)
+]) if any(h.get('parsed_note') for h in recent_feedback) else 'No structured insights yet — feedback notes will be analysed as they come in'}
 """
 
     if realtime_instruction:
@@ -872,6 +879,51 @@ def feedback():
         pattern_alerts = analyze_patterns(feedback_data)
         if pattern_alerts:
             feedback_data["pattern_alerts"] = pattern_alerts
+
+        if note and len(note.strip()) > 3:
+            try:
+                parse_response = groq_client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You extract structured data from canteen feedback notes. Return only valid JSON."
+                        },
+                        {
+                            "role": "user",
+                            "content": f"""Extract structured information from this canteen feedback note: "{note}"
+
+Return ONLY a JSON object with these fields (use null if not mentioned):
+{{
+  "stockout_item": "item that ran out (string or null)",
+  "footfall_vs_prediction": "higher/lower/as_expected/null",
+  "weather_impact": "yes/no/null",
+  "issue": "brief description of main issue (string or null)",
+  "positive": "brief description of what went well (string or null)"
+}}
+
+Return only the JSON. Nothing else."""
+                        }
+                    ],
+                    max_tokens=150,
+                    temperature=0.1
+                )
+                parsed_text = parse_response.choices[0].message.content.strip()
+                parsed_text = parsed_text.replace("```json", "").replace("```", "").strip()
+                parsed_data = json.loads(parsed_text)
+                
+                if is_pending_update and pending_date:
+                    for i, h in enumerate(feedback_data["history"]):
+                        if h.get("date") == pending_date:
+                            feedback_data["history"][i]["parsed_note"] = parsed_data
+                            break
+                else:
+                    if feedback_data["history"]:
+                        feedback_data["history"][-1]["parsed_note"] = parsed_data
+                        
+            except Exception as parse_error:
+                print(f"Note parsing error: {parse_error}")
+
         save_feedback(feedback_data)
 
         return jsonify({
