@@ -1068,8 +1068,12 @@ def accuracy():
                 continue
             try:
                 date = datetime.strptime(entry["date"], "%Y-%m-%d")
-                week_start = date - timedelta(days=date.weekday())
-                week_key = week_start.strftime("%b %d")
+                app_start = datetime.strptime("2026-06-19", "%Y-%m-%d")
+                if date < app_start:
+                    continue
+                days_since_start = (date - app_start).days
+                week_num = days_since_start // 7 + 1
+                week_key = f"Week {week_num}"
                 if week_key not in weeks:
                     weeks[week_key] = {"total": 0, "total_score": 0, "start_date": entry["date"]}
                 weeks[week_key]["total"] += 1
@@ -1078,11 +1082,19 @@ def accuracy():
                 continue
         
         week_list = []
-        for week_key, data in sorted(weeks.items()):
+        week_starts = {
+            1: "Jun 19",
+            2: "Jun 27",
+            3: "Jul 4",
+            4: "Jul 11"
+        }
+        week_list = []
+        for week_key, data in sorted(weeks.items(), key=lambda x: int(x[0].split()[1])):
             avg_score = round(data["total_score"] / data["total"], 1) if data["total"] > 0 else 0
             accuracy_pct = round((avg_score / 5) * 100) if data["total"] > 0 else 0
+            week_num = int(week_key.split()[1])
             week_list.append({
-                "week": week_key,
+                "week": week_starts.get(week_num, week_key),
                 "total": data["total"],
                 "avg_score": avg_score,
                 "accuracy": accuracy_pct,
