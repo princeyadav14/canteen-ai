@@ -1,8 +1,8 @@
-# DayCue — AI Demand Signals for Campus Canteens
+# DayCue - AI Demand Signals for Campus Canteens
 
-> **Top 1% · OkCredit Future Founders 2026 · 150+ campuses · 1,000+ participants**
+> **Ranked in Top 1% · OkCredit Future Founders 2026 · 150+ campuses · 1,000+ participants**
 
-DayCue predicts daily demand for campus canteen owners **before the rush hits** — using live weather, mess menu quality, academic calendar, hostel events, and merchant feedback history. Built for Anoop, owner of Hall 12 canteen at IIT Kanpur.
+DayCue predicts daily demand for campus canteen owners **before the rush hits**, using live weather, mess menu quality, academic calendar, hostel and campus events and merchant feedback history. Built for Anoop, the owner of Hall 12 canteen at IIT Kanpur.
 
 **Live app:** [canteen-ai-production.up.railway.app](https://canteen-ai-production.up.railway.app)
 
@@ -10,14 +10,11 @@ DayCue predicts daily demand for campus canteen owners **before the rush hits** 
 
 ## The Problem
 
-Anoop runs Hall 12 canteen serving 400+ students daily from 2pm to 2am. Every stocking decision was pure gut feel. On high-rush nights he ran out — turning away 10-15 students per rush. Those students told friends *"canteen mein khaana khatam ho gaya"* — a word-of-mouth loop that suppressed entire group visits. On slow nights, ₹200-300 of raw ingredients went to waste weekly.
+Anoop runs Hall 12 canteen at IIT Kanpur serving 400+ students daily. Every stocking decision was pure gut feel — leading to stockouts on high-rush nights and ingredient waste on slow ones. Demand was unpredictable, preparation was reactive, and there was no data to reason from.
 
 **The Wednesday Validation — July 1st, 2026**
 
-DayCue predicted 65% rain probability in the morning. By 3pm the sky looked completely clear. Anoop stocked extra samosas and fritters anyway. Rain came in the evening. Result: **50-60% more evening snack sales** than on any previous unwarned rainy evening.
-
-> *"Maine morning mein dekha tha ki aaj barish hoga, fir dopahar mein laga nahi ki hogi — fir shaam ko barish hui to kafi acha sales hua."*
-> — Anoop, Hall 12 Canteen Owner
+DayCue predicted 65% rain probability in the morning when the sky looked completely clear by 3pm. Anoop stocked extra inventory based on the forecast. Rain arrived in the evening — resulting in **50-60% more evening snack sales** than on previous unwarned rainy days. First time he prepped correctly for an unexpected weather event.
 
 ---
 
@@ -66,13 +63,13 @@ Displayed to merchant with:
 Anoop rates prediction (1-5) next morning
         ↓
 Groq NLU parses Hindi notes
-("samosa khatam ho gaya" → {stockout_item: "samosa"})
+("samose khatam ho gaye" → {stockout_item: "samosa"})
         ↓
 Structured signals saved to Firebase
         ↓
 Fed into next day's prediction context
         ↓
-Accuracy improves over time (70% → 84% over 3 weeks)
+Accuracy improves over time (70% → 84% over 3 weeks in Anoop's case)
 ```
 
 ---
@@ -149,7 +146,7 @@ graph TD
 | Weather | Tomorrow.io API |
 | Database | Firebase Firestore |
 | Deployment | Railway |
-| Frontend | HTML · CSS · JavaScript (single file) |
+| Frontend | HTML · CSS · JavaScript |
 | Fonts | Inter · Manrope |
 
 ---
@@ -207,11 +204,13 @@ Create a `.env` file in the root directory:
 
 ```env
 GROQ_API_KEY=your_groq_api_key
-FIREBASE_CREDENTIALS_B64=your_base64_encoded_firebase_credentials
 TOMORROW_API_KEY=your_tomorrow_io_api_key
 ```
 
-**Getting FIREBASE_CREDENTIALS_B64:**
+Place your Firebase service account file in the root directory:
+firebase-credentials.json   # Download from Firebase Console → Project Settings → Service Accounts
+
+For Railway deployment, encode the credentials as base64 and add as an environment variable:
 
 ```bash
 # Mac/Linux
@@ -221,7 +220,7 @@ base64 -i firebase-credentials.json
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("firebase-credentials.json"))
 ```
 
-Paste the output as the value of `FIREBASE_CREDENTIALS_B64`.
+Add the output as `FIREBASE_CREDENTIALS_B64` in Railway → Variables.
 
 ### Run
 
@@ -239,15 +238,13 @@ Open `http://127.0.0.1:5000` in your browser.
 2. Connect repo to Railway
 3. Add environment variables in Railway → Variables:
    - `GROQ_API_KEY`
-   - `FIREBASE_CREDENTIALS_B64`
    - `TOMORROW_API_KEY`
+   - `FIREBASE_CREDENTIALS_B64`
 4. Railway auto-deploys on every push to main
 
 ---
 
 ## Firebase Structure
-
-```
 canteen/
 ├── feedback/
 │   └── history[]           # date, day, score, predicted_level, note, parsed_note
@@ -256,27 +253,25 @@ canteen/
 ├── events/                 # Hostel events + quiz_week_active flag
 ├── weather_history/        # Yesterday's weather for change detection
 └── usage_log/
-    └── sessions/           # Every predict click: device, IP, timestamp (IST)
-```
+└── sessions/           # Every predict click: device, IP, timestamp (IST)
 
 ---
 
 ## Key Learnings
 
-1. **Talk to merchants before building** — every Week 1 assumption was wrong. The conversations corrected them.
-2. **Ship broken and fix publicly** — correcting errors in front of Anoop built more trust than a polished prototype.
-3. **Retention mechanic is the product** — the morning pending card (rate yesterday to get today) drives the habit, not the prediction.
-4. **Politeness is not adoption** — one correct prediction on a surprising day builds more trust than two weeks of routine accuracy.
-5. **Weather affects what Indian campus merchants stock, not whether customers come** — both mess and canteen are inside the hostel. Rain means chai and samosa, not fewer customers.
+1. **Talk to merchants before building** - many Week 1 assumptions were wrong. The conversations corrected them.
+2. **Ship broken and fix publicly** - correcting errors in front of Anoop built more trust than a polished prototype.
+3. **Retention mechanic is the product** - the morning pending card (rate yesterday to get today) drives the habit, not the prediction.
+4. **Politeness is not adoption** - one correct prediction on a surprising day builds more trust than two weeks of routine accuracy.
+5. **Weather affects what Indian campus merchants stock, not whether customers come** - both mess and canteen are inside the hostel. Rain means chai and samosa, not fewer customers.
 
 ---
 
 ## What's Next
 
-- **Quantified predictions** — move from "HIGH RUSH" to "prep 40 extra samosas" (needs 4-6 weeks footfall data)
-- **Student survey** — replace observation-based behavioral patterns with validated data from Hall 12 residents
-- **Multi-canteen expansion** — same architecture, different mess menus and event calendars per hostel
-- **Model migration** — transition to Groq's recommended replacements as Llama models deprecate
+- **Quantified predictions** - move from "HIGH RUSH" to "prep 40 extra samosas" (needs 4-6 weeks footfall data)
+- **Student survey** - replace observation-based behavioral patterns with validated data from Hall 12 residents
+- **Multi-canteen expansion** - same architecture, different mess menus and event calendars per hostel
 
 ---
 
@@ -300,10 +295,10 @@ MIT
 
 ## Acknowledgements
 
-- **Anoop** — Hall 12 canteen owner, IIT Kanpur — for 13 consecutive days of honest feedback
-- **OkCredit** — for the Future Founders 2026 programme
-- **Groq** — for fast LLM inference
-- **Tomorrow.io** — for hyperlocal Kanpur weather data
+- **Anoop** - Hall 12 canteen owner, IIT Kanpur - for 13 consecutive days of honest feedback
+- **OkCredit** - for the Future Founders 2026 programme
+- **Groq** - for fast LLM inference
+- **Tomorrow.io** - for hyperlocal Kanpur weather data
 
 ---
 
